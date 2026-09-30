@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TaskFlow</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #111827;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: #9ca3af;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+        }
+
+        .task-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        li {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f3f4f6;
+            border-radius: 6px;
+        }
+
+        .status {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #16a34a;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🚀 TaskFlow</h1>
+    <p>Simple Task Management Application</p>
+</header>
+
+<div class="container">
+
+    <div class="card">
+
+        <h2>My Tasks</h2>
+
+        <div class="task-form">
+            <input
+                type="text"
+                id="taskInput"
+                placeholder="Enter a new task..."
+            >
+
+            <button onclick="addTask()">
+                Add Task
+            </button>
+        </div>
+
+        <ul id="taskList"></ul>
+
+        <div class="status" id="status">
+            Connected to TaskFlow
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+async function loadTasks() {
+
+    const response = await fetch("/tasks");
+
+    const tasks = await response.json();
+
+    const taskList = document.getElementById("taskList");
+
+    taskList.innerHTML = "";
+
+    tasks.forEach(task => {
+
+        const li = document.createElement("li");
+
+        li.textContent = `#${task.id} — ${task.title}`;
+
+        taskList.appendChild(li);
+
+    });
+}
+
+
+async function addTask() {
+
+    const input = document.getElementById("taskInput");
+
+    const title = input.value.trim();
+
+    if (!title) {
+        alert("Please enter a task.");
+        return;
+    }
+
+    await fetch("/tasks", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            title: title
+        })
+
+    });
+
+    input.value = "";
+
+    loadTasks();
+}
+
+
+loadTasks();
+
+</script>
+
+</body>
+</html>
