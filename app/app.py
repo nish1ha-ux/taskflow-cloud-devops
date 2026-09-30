@@ -1,17 +1,13 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 
 app = Flask(__name__)
-
 
 tasks = []
 
 
 @app.route("/")
 def home():
-    return jsonify({
-        "message": "Welcome to TaskFlow",
-        "status": "running"
-    })
+    return render_template("index.html")
 
 
 @app.route("/health")
