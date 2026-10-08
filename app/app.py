@@ -1,8 +1,33 @@
+import os
+import psycopg2
 from flask import Flask, jsonify, request, render_template
 
 app = Flask(__name__)
 
-tasks = []
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+
+def get_db_connection():
+    return psycopg2.connect(DATABASE_URL)
+
+
+def init_db():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS tasks (
+            id SERIAL PRIMARY KEY,
+            title TEXT NOT NULL
+        )
+    """)
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+init_db()
 
 
 @app.route("/")
@@ -19,6 +44,20 @@ def health():
 
 @app.route("/tasks", methods=["GET"])
 def get_tasks():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT id, title FROM tasks ORDER BY id")
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    tasks = [
+        {"id": row[0], "title": row[1]}
+        for row in rows
+    ]
+
     return jsonify(tasks), 200
 
 
@@ -31,14 +70,24 @@ def create_task():
             "error": "Task title is required"
         }), 400
 
-    task = {
-        "id": len(tasks) + 1,
-        "title": data["title"]
-    }
+    conn = get_db_connection()
+    cur = conn.cursor()
 
-    tasks.append(task)
+    cur.execute(
+        "INSERT INTO tasks (title) VALUES (%s) RETURNING id, title",
+        (data["title"],)
+    )
 
-    return jsonify(task), 201
+    row = cur.fetchone()
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return jsonify({
+        "id": row[0],
+        "title": row[1]
+    }), 201
 
 
 if __name__ == "__main__":
