@@ -128,3 +128,76 @@ continuous integration and image delivery using GitHub Actions.
 * Flask now uses `werkzeug.middleware.proxy_fix.ProxyFix` to correctly interpret `X‑Forwarded‑For`, `X‑Forwarded‑Proto`, etc., so real client IPs are logged.
 
 ---
+
+## 🖥️ Local Development (without Docker)
+
+You can run the test suite and linter on Windows **without Docker or PostgreSQL**.
+
+### 1. Create a virtual environment (PowerShell)
+
+```powershell
+cd taskflow-cloud-devops
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+### 2. Install dependencies
+
+```powershell
+pip install -r app/requirements.txt
+pip install flake8 pytest
+```
+
+### 3. Run the tests
+
+```powershell
+pytest -v
+```
+
+### 4. Run the linter
+
+```powershell
+flake8 app
+```
+
+### 5. Run the application locally (requires PostgreSQL)
+
+```powershell
+$env:DATABASE_URL = "postgresql://taskflow:taskflow@localhost:5432/taskflow"
+python app/app.py
+```
+
+The app starts on `http://localhost:8000`. A running PostgreSQL server is
+required for routes that access the database.
+
+---
+
+## 🌐 Application Routes
+
+| Method | Path      | Description                      | Requires DB |
+|--------|-----------|----------------------------------|-------------|
+| GET    | `/`       | Web UI (renders `index.html`)    | No          |
+| GET    | `/health` | Health check (probes database)   | Yes         |
+| GET    | `/tasks`  | List all tasks as JSON           | Yes         |
+| POST   | `/tasks`  | Create a task (`{"title": "…"}`) | Yes         |
+
+### Environment Variables
+
+| Variable       | Required | Description                          |
+|----------------|----------|--------------------------------------|
+| `DATABASE_URL` | Yes      | PostgreSQL connection string         |
+| `NGINX_CONF`   | No       | Nginx config file (default: `default-http.conf`) |
+
+---
+
+## ⚙️ CI Pipeline
+
+The GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push
+and pull request to `main`:
+
+1. **lint** — installs dependencies, runs `flake8 app` and `pytest -q`.
+2. **compose_check** — validates `docker-compose.yml` syntax.
+3. **build_and_push** — builds and pushes the Docker image to GHCR
+   (**only on push to `main`**, never on pull requests).
+
+---

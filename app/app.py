@@ -30,7 +30,10 @@ def init_db():
     conn.close()
 
 
-init_db()
+# init_db() is NOT called at module level so the module can be imported
+# without a live database (e.g. during testing or linting).
+# When the app is started directly (python app.py / Docker CMD), init_db()
+# runs inside the __main__ block below.
 
 
 @app.route("/")
@@ -40,9 +43,22 @@ def home():
 
 @app.route("/health")
 def health():
-    return jsonify({
-        "status": "healthy"
-    }), 200
+    """Health check that verifies the database is reachable."""
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT 1")
+        cur.close()
+        conn.close()
+        return jsonify({
+            "status": "healthy",
+            "database": "connected"
+        }), 200
+    except Exception:
+        return jsonify({
+            "status": "unhealthy",
+            "database": "unreachable"
+        }), 503
 
 
 @app.route("/tasks", methods=["GET"])
@@ -94,4 +110,5 @@ def create_task():
 
 
 if __name__ == "__main__":
+    init_db()
     app.run(host="0.0.0.0", port=8000)
