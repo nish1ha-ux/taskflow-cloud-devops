@@ -119,6 +119,61 @@ def create_task():
     }), 201
 
 
+@app.route("/tasks/<int:task_id>", methods=["PUT"])
+def update_task(task_id):
+    data = request.get_json()
+
+    if not data or "title" not in data or not str(data["title"]).strip():
+        return jsonify({
+            "error": "Task title is required"
+        }), 400
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        "UPDATE tasks SET title = %s WHERE id = %s RETURNING id, title",
+        (str(data["title"]).strip(), task_id)
+    )
+    row = cur.fetchone()
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    if not row:
+        return jsonify({"error": "Task not found"}), 404
+
+    return jsonify({
+        "id": row[0],
+        "title": row[1]
+    }), 200
+
+
+@app.route("/tasks/<int:task_id>", methods=["DELETE"])
+def delete_task(task_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        "DELETE FROM tasks WHERE id = %s RETURNING id",
+        (task_id,)
+    )
+    row = cur.fetchone()
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    if not row:
+        return jsonify({"error": "Task not found"}), 404
+
+    return jsonify({
+        "message": "Task deleted successfully",
+        "id": task_id
+    }), 200
+
+
 if __name__ == "__main__":
     init_db()
     app.run(host="0.0.0.0", port=8000)

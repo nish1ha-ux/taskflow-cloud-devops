@@ -163,6 +163,81 @@ def test_create_task_success(client):
     mock_conn.close.assert_called_once()
 
 
+def test_update_task_success(client):
+    """PUT /tasks/<id> updates task title and returns 200."""
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value = mock_cur
+    mock_cur.fetchone.return_value = (5, "Updated Task Title")
+
+    with patch("app.app.get_db_connection", return_value=mock_conn):
+        response = client.put("/tasks/5", json={"title": "Updated Task Title"})
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data == {"id": 5, "title": "Updated Task Title"}
+    mock_conn.commit.assert_called_once()
+    mock_cur.close.assert_called_once()
+    mock_conn.close.assert_called_once()
+
+
+def test_update_task_not_found(client):
+    """PUT /tasks/<id> returns 404 if task does not exist."""
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value = mock_cur
+    mock_cur.fetchone.return_value = None
+
+    with patch("app.app.get_db_connection", return_value=mock_conn):
+        response = client.put("/tasks/999", json={"title": "Nonexistent"})
+
+    assert response.status_code == 404
+    data = response.get_json()
+    assert data["error"] == "Task not found"
+
+
+def test_update_task_missing_title(client):
+    """PUT /tasks/<id> returns 400 if title is empty or missing."""
+    response = client.put("/tasks/5", json={"title": "   "})
+    assert response.status_code == 400
+    data = response.get_json()
+    assert data["error"] == "Task title is required"
+
+
+def test_delete_task_success(client):
+    """DELETE /tasks/<id> deletes the task and returns 200."""
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value = mock_cur
+    mock_cur.fetchone.return_value = (5,)
+
+    with patch("app.app.get_db_connection", return_value=mock_conn):
+        response = client.delete("/tasks/5")
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["message"] == "Task deleted successfully"
+    assert data["id"] == 5
+    mock_conn.commit.assert_called_once()
+    mock_cur.close.assert_called_once()
+    mock_conn.close.assert_called_once()
+
+
+def test_delete_task_not_found(client):
+    """DELETE /tasks/<id> returns 404 if task does not exist."""
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value = mock_cur
+    mock_cur.fetchone.return_value = None
+
+    with patch("app.app.get_db_connection", return_value=mock_conn):
+        response = client.delete("/tasks/999")
+
+    assert response.status_code == 404
+    data = response.get_json()
+    assert data["error"] == "Task not found"
+
+
 def test_init_db():
     """init_db creates tasks table if it does not exist."""
     from app.app import init_db

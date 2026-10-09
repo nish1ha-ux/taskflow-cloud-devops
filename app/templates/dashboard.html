@@ -24,7 +24,7 @@
             --input-border: #25324a;
             --row-bg: rgba(27, 39, 62, 0.44);
             --row-hover: rgba(34, 48, 77, 0.56);
-            --row-border: transparent;
+            --row-border: rgba(112, 132, 173, 0.12);
             --btn-icon-bg: rgba(19, 29, 48, 0.7);
             --btn-icon-border: #25324a;
             --btn-icon-color: #9ca8bd;
@@ -124,13 +124,14 @@
             backdrop-filter: blur(12px);
             display: flex;
             flex-direction: column;
-            transition: background-color .2s ease, border-color .2s ease;
+            transition: background-color .2s ease, border-color .2s ease, transform .25s ease;
+            z-index: 100;
         }
         .brand {
             display: flex;
             align-items: center;
             gap: 11px;
-            padding: 0 12px 40px;
+            padding: 0 12px 36px;
             font-size: 17px;
             font-weight: 750;
             letter-spacing: -.04em;
@@ -156,7 +157,7 @@
             font-weight: 700;
         }
         .nav { display: grid; gap: 5px; }
-        .nav a, .nav button {
+        .nav a {
             display: flex;
             align-items: center;
             gap: 12px;
@@ -170,11 +171,11 @@
             transition: .2s ease;
             cursor: pointer;
         }
-        .nav a:hover, .nav a.active, .nav button:hover, .nav button.active {
+        .nav a:hover, .nav a.active {
             color: var(--text);
             background: linear-gradient(90deg, rgba(109,140,255,.17), rgba(109,140,255,.05));
         }
-        .nav a.active, .nav button.active {
+        .nav a.active {
             box-shadow: inset 2px 0 var(--blue);
             color: var(--text);
             font-weight: 600;
@@ -225,7 +226,19 @@
             margin-bottom: 34px;
             position: relative;
         }
-        .eyebrow { color: var(--blue); font-size: 12px; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+        .eyebrow {
+            color: var(--blue);
+            font-size: 12px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .eyebrow a { color: var(--muted); }
+        .eyebrow a:hover { color: var(--blue); }
         h1 { font-size: clamp(26px, 3vw, 34px); line-height: 1.1; letter-spacing: -.055em; color: var(--text); }
         .subtitle { margin-top: 10px; color: var(--muted); font-size: 13px; }
         .top-actions { display: flex; align-items: center; gap: 10px; position: relative; }
@@ -282,7 +295,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 14px;
+            padding: 9px 14px;
             color: var(--text);
             background: var(--secondary-bg);
             border: 1px solid var(--btn-icon-border);
@@ -317,80 +330,146 @@
             transform: translateY(-2px);
             border-color: rgba(109,140,255,.35);
         }
-        .stat-card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: transparent;
+        .stat-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
         }
-        .stat-card.c-total::before { background: linear-gradient(90deg, var(--blue), var(--purple)); }
-        .stat-card.c-done::before { background: var(--green); }
-        .stat-card.c-progress::before { background: var(--blue); }
-        .stat-card.c-pending::before { background: var(--amber); }
-        .stat-head { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 12px; font-weight: 600; }
-        .stat-icon { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; }
-        .stat-card.c-total .stat-icon { background: rgba(109,140,255,.14); color: var(--blue); }
-        .stat-card.c-done .stat-icon { background: rgba(85,214,164,.14); color: var(--green); }
-        .stat-card.c-progress .stat-icon { background: rgba(109,140,255,.14); color: var(--blue); }
-        .stat-card.c-pending .stat-icon { background: rgba(245,158,11,.14); color: var(--amber); }
-        .stat-icon svg { width: 15px; }
-        .stat-number { margin: 14px 0 6px; font-size: 28px; font-weight: 750; letter-spacing: -.05em; color: var(--text); }
-        .stat-note { color: var(--muted); font-size: 11px; }
-        .stat-note strong { color: var(--green); font-weight: 600; }
+        .stat-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--muted);
+        }
+        .stat-icon {
+            display: grid;
+            place-items: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+        }
+        .stat-icon svg { width: 15px; height: 15px; }
+        .stat-icon.blue { background: rgba(109,140,255,.15); color: var(--blue); }
+        .stat-icon.green { background: rgba(85,214,164,.15); color: var(--green); }
+        .stat-icon.amber { background: rgba(245,158,11,.15); color: var(--amber); }
+        .stat-icon.purple { background: rgba(155,123,255,.15); color: var(--purple); }
+
+        .stat-val {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -.05em;
+            color: var(--text);
+            line-height: 1;
+        }
+        .stat-sub {
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
 
         /* Dashboard Grid Layout */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: 1fr 340px;
+            grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
             gap: 20px;
-            align-items: start;
         }
         .panel { padding: 24px; }
         .panel-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
         }
-        .panel-title { font-size: 16px; font-weight: 700; letter-spacing: -.03em; color: var(--text); }
-        .panel-caption { margin-top: 4px; color: var(--muted); font-size: 12px; }
-        .view-all-link { color: var(--blue); font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
-        .view-all-link:hover { text-decoration: underline; }
+        .panel-title { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -.03em; }
+        .panel-subtitle { font-size: 12px; color: var(--muted); margin-top: 3px; }
 
-        /* Recent Tasks Table */
-        .task-table {
+        /* Progress Meter */
+        .meter-container { margin: 12px 0 24px; }
+        .meter-track {
+            height: 10px;
+            border-radius: 10px;
+            background: var(--meter-bg);
+            overflow: hidden;
+            position: relative;
+        }
+        .meter-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--blue), var(--green));
+            transition: width .5s cubic-bezier(.16,1,.3,1);
+            width: 0%;
+        }
+        .meter-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .meter-info strong { color: var(--text); }
+
+        /* Distribution Breakdown */
+        .breakdown-list { display: grid; gap: 10px; }
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: var(--breakdown-bg);
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        .breakdown-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .dot.green { background: var(--green); }
+        .dot.blue { background: var(--blue); }
+        .dot.amber { background: var(--amber); }
+
+        /* Table */
+        .table-wrap { overflow-x: auto; margin-top: 10px; }
+        table {
             width: 100%;
             border-collapse: collapse;
             font-size: 13px;
-        }
-        .task-table th {
             text-align: left;
-            padding: 10px 12px;
+        }
+        th {
+            padding: 10px 14px;
             color: var(--muted);
-            font-size: 11px;
             font-weight: 600;
+            font-size: 11px;
             text-transform: uppercase;
             letter-spacing: .06em;
-            border-bottom: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--line);
         }
-        .task-table td {
-            padding: 14px 12px;
-            border-bottom: 1px solid var(--card-border);
-            color: var(--text-secondary);
-            transition: background-color .2s ease;
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(127,145,181,.1);
+            color: var(--text);
+            vertical-align: middle;
         }
-        .task-table tr:hover td {
-            background: var(--table-hover);
-        }
-        .task-table tr:last-child td { border-bottom: 0; }
+        tr:hover td { background: var(--table-hover); }
+
         .badge {
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            padding: 4px 9px;
+            padding: 3px 8px;
             border-radius: 6px;
             font-size: 11px;
             font-weight: 600;
@@ -398,73 +477,14 @@
         .badge-done { background: var(--badge-done-bg); color: var(--badge-done-text); }
         .badge-progress { background: var(--badge-progress-bg); color: var(--badge-progress-text); }
         .badge-pending { background: var(--badge-pending-bg); color: var(--badge-pending-text); }
-        .priority-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .priority-high { background: var(--danger); }
-        .priority-med { background: var(--amber); }
-        .priority-low { background: var(--blue); }
-
-        /* Progress Card in Sidebar */
-        .progress-meter {
-            margin: 16px 0 20px;
-        }
-        .meter-bar {
-            height: 9px;
-            background: var(--meter-bg);
-            border-radius: 6px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-        .meter-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--blue), var(--green));
-            border-radius: 6px;
-            width: 0%;
-            transition: width .5s ease;
-        }
-        .meter-labels {
-            display: flex;
-            justify-content: space-between;
-            color: var(--muted);
-            font-size: 11px;
-        }
-
-        /* Status Breakdown */
-        .breakdown-list {
-            display: grid;
-            gap: 12px;
-            margin-top: 18px;
-        }
-        .breakdown-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 12px;
-            background: var(--breakdown-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
-            font-size: 12px;
-            color: var(--text);
-            cursor: pointer;
-            transition: .2s ease;
-        }
-        .breakdown-item:hover {
-            border-color: var(--blue);
-            transform: translateX(2px);
-        }
-        .breakdown-item-left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .indicator-dot { width: 8px; height: 8px; border-radius: 50%; }
 
         .empty-state {
-            padding: 40px 20px;
+            padding: 36px 16px;
             text-align: center;
             color: var(--muted);
             font-size: 13px;
         }
-        .empty-state svg { width: 34px; height: 34px; margin-bottom: 12px; color: var(--muted); }
+        .empty-state svg { width: 36px; height: 36px; margin-bottom: 10px; }
 
         /* Notification Dropdown */
         .notif-dropdown {
@@ -532,7 +552,7 @@
             font-size: 10px;
         }
 
-        /* Modal Overlay */
+        /* Modal Dialog */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -563,19 +583,25 @@
         .close-btn {
             background: transparent;
             color: var(--muted);
-            font-size: 18px;
-            padding: 4px;
+            font-size: 20px;
+            padding: 4px 8px;
+            line-height: 1;
         }
         .close-btn:hover { color: var(--text); }
         .modal-content { display: grid; gap: 16px; font-size: 13px; color: var(--text-secondary); }
-        .setting-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 14px;
-            background: var(--row-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 10px;
+        .modal-input {
+            width: 100%;
+            padding: 10px 14px;
+            color: var(--text);
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 9px;
+            font-size: 13px;
+        }
+        .modal-input:focus {
+            border-color: var(--blue);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(109,140,255,.15);
         }
         .modal-footer {
             margin-top: 22px;
@@ -584,20 +610,75 @@
             gap: 10px;
         }
 
+        /* Toast Feedback */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            background: var(--panel);
+            color: var(--text);
+            border: 1px solid var(--blue);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 3000;
+            opacity: 0;
+            transform: translateY(15px);
+            pointer-events: none;
+            transition: all .25s cubic-bezier(.16,1,.3,1);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .toast-icon { color: var(--green); }
+
+        .drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 90;
+            display: none;
+        }
+        .drawer-overlay.show { display: block; }
+        .mobile-menu-btn { display: none; }
+
         @media (max-width: 900px) {
             .dashboard-grid { grid-template-columns: 1fr; }
             .stats { grid-template-columns: repeat(2, 1fr); }
         }
-        @media (max-width: 640px) {
-            .app-shell { display: block; }
-            .sidebar { width: 100%; height: auto; padding: 16px; border-right: 0; border-bottom: 1px solid var(--sidebar-border); }
-            .brand { padding: 0 0 15px; }
-            .nav-label, .sidebar-bottom { display: none; }
-            .nav { display: flex; gap: 5px; overflow: auto; }
-            .nav a, .nav button { flex: 0 0 auto; width: auto; padding: 9px 12px; }
+        @media (max-width: 768px) {
+            .mobile-menu-btn { display: grid; }
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
             main { padding: 24px 16px 40px; }
-            .stats { grid-template-columns: 1fr; }
             .notif-dropdown { right: -60px; width: 290px; }
+        }
+        @media (max-width: 480px) {
+            .stats { grid-template-columns: 1fr; }
+            .topbar { flex-direction: column; align-items: stretch; }
+            .top-actions { justify-content: space-between; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
     <script>
@@ -613,8 +694,10 @@
     </script>
 </head>
 <body>
+<div class="drawer-overlay" id="drawerOverlay"></div>
+
 <div class="app-shell">
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
         <div class="brand">
             <span class="brand-mark">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 12.5 10 17l8-10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -654,7 +737,12 @@
     <main>
         <header class="topbar">
             <div>
-                <div class="eyebrow">TaskFlow Overview & Analytics</div>
+                <div class="eyebrow">
+                    <button class="icon-button mobile-menu-btn" id="mobileMenuBtn" aria-label="Open navigation sidebar" style="display:inline-grid; width:28px; height:28px; margin-right:4px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+                    <span>Workspace</span> / <span style="color:var(--text);">Dashboard</span>
+                </div>
                 <h1>Welcome to Dashboard <span aria-hidden="true">📊</span></h1>
                 <p class="subtitle">Real-time performance metrics and task distribution across your workspace.</p>
             </div>
@@ -670,7 +758,7 @@
                 </button>
 
                 <!-- Notification Dropdown -->
-                <div class="notif-dropdown" id="notifDropdown" role="menu">
+                <div class="notif-dropdown" id="notifDropdown" role="region" aria-label="Notifications list">
                     <div class="notif-header">
                         <span>Notifications</span>
                         <button class="notif-clear-btn" id="notifClearBtn" type="button">Mark all read</button>
@@ -679,175 +767,153 @@
                         <div class="notif-item">
                             <span class="notif-dot" style="background: var(--green);"></span>
                             <div>
-                                <strong>System Online & Healthy</strong>
-                                <p style="color: var(--muted); font-size: 11px;">PostgreSQL database connected and serving live queries.</p>
+                                <strong>System Operational</strong>
+                                <div>Live PostgreSQL & Nginx proxy active.</div>
                                 <span class="notif-time">Just now</span>
-                            </div>
-                        </div>
-                        <div class="notif-item">
-                            <span class="notif-dot" style="background: var(--blue);"></span>
-                            <div>
-                                <strong>Production Deployment Active</strong>
-                                <p style="color: var(--muted); font-size: 11px;">Running TaskFlow Cloud DevOps on AWS EC2.</p>
-                                <span class="notif-time">5 mins ago</span>
-                            </div>
-                        </div>
-                        <div class="notif-item">
-                            <span class="notif-dot" style="background: var(--purple);"></span>
-                            <div>
-                                <strong>Analytics Synced</strong>
-                                <p style="color: var(--muted); font-size: 11px;">Task metrics and progress ratios updated.</p>
-                                <span class="notif-time">10 mins ago</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <a href="/" class="secondary" title="Open My Tasks">
-                    <svg viewBox="0 0 24 24" fill="none" width="16" height="16" stroke="currentColor" stroke-width="2"><path d="M5 6h14M5 12h14M5 18h9" stroke-linecap="round"/></svg>
-                    Go to Tasks
-                </a>
-                <button class="primary" id="quickAddBtn" title="Create a new task">
-                    <svg viewBox="0 0 24 24" fill="none" width="16" height="16" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
-                    New Task
+                <button class="primary" id="dashboardAddBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px; height:16px;"><path d="M12 5v14M5 12h14"/></svg>
+                    <span>+ New Task</span>
                 </button>
             </div>
         </header>
 
         <!-- Summary Cards -->
-        <section class="stats" aria-label="Task metrics">
-            <article class="stat-card c-total" id="cardTotalWrapper" title="Click to view all tasks" onclick="window.location.href='/'">
-                <div class="stat-head">
-                    <span>Total Tasks</span>
-                    <span class="stat-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>
-                    </span>
+        <section class="stats" aria-label="Summary Statistics">
+            <article class="stat-card" onclick="window.location.href='/'" title="View all tasks">
+                <div class="stat-card-top">
+                    <span class="stat-label">Total Tasks</span>
+                    <span class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12h6M9 8h6M9 16h4"/></svg></span>
                 </div>
-                <div class="stat-number" id="cardTotal">0</div>
-                <div class="stat-note">Workspace task volume</div>
+                <div class="stat-val" id="cardTotal">0</div>
+                <div class="stat-sub">Across entire workspace</div>
             </article>
 
-            <article class="stat-card c-done" id="cardCompletedWrapper" title="Click to view completed tasks" onclick="window.location.href='/?view=completed'">
-                <div class="stat-head">
-                    <span>Completed</span>
-                    <span class="stat-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                    </span>
+            <article class="stat-card" onclick="window.location.href='/?view=completed'" title="View completed tasks">
+                <div class="stat-card-top">
+                    <span class="stat-label">Completed</span>
+                    <span class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg></span>
                 </div>
-                <div class="stat-number" id="cardCompleted">0</div>
-                <div class="stat-note"><strong id="cardDonePercent">0%</strong> completion rate</div>
+                <div class="stat-val" id="cardCompleted">0</div>
+                <div class="stat-sub"><strong id="cardDonePercent" style="color:var(--green)">0%</strong> completion rate</div>
             </article>
 
-            <article class="stat-card c-progress" id="cardProgressWrapper" title="Click to view active tasks" onclick="window.location.href='/?view=active'">
-                <div class="stat-head">
-                    <span>In Progress</span>
-                    <span class="stat-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    </span>
+            <article class="stat-card" onclick="window.location.href='/'" title="View in progress tasks">
+                <div class="stat-card-top">
+                    <span class="stat-label">In Progress</span>
+                    <span class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 6 12 12 16 14"/></svg></span>
                 </div>
-                <div class="stat-number" id="cardInProgress">0</div>
-                <div class="stat-note">Active execution state</div>
+                <div class="stat-val" id="cardInProgress">0</div>
+                <div class="stat-sub">Actively moving forward</div>
             </article>
 
-            <article class="stat-card c-pending" id="cardPendingWrapper" title="Click to view pending tasks" onclick="window.location.href='/?view=active'">
-                <div class="stat-head">
-                    <span>Pending</span>
-                    <span class="stat-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    </span>
+            <article class="stat-card" onclick="window.location.href='/'" title="View pending tasks">
+                <div class="stat-card-top">
+                    <span class="stat-label">Pending</span>
+                    <span class="stat-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
                 </div>
-                <div class="stat-number" id="cardPending">0</div>
-                <div class="stat-note">Queued for completion</div>
+                <div class="stat-val" id="cardPending">0</div>
+                <div class="stat-sub">Queued in backlog</div>
             </article>
         </section>
 
-        <!-- Dashboard Grid -->
+        <!-- Main Dashboard Split Grid -->
         <div class="dashboard-grid">
-            <!-- Recent Tasks Overview Section -->
+            <!-- Recent Tasks Panel -->
             <section class="panel">
                 <div class="panel-header">
                     <div>
-                        <h2 class="panel-title">Recent Tasks & Status</h2>
-                        <p class="panel-caption">Live records from PostgreSQL database</p>
+                        <h2 class="panel-title">Recent Tasks Overview</h2>
+                        <p class="panel-subtitle">Latest active items recorded in your database.</p>
                     </div>
-                    <a href="/" class="view-all-link">
-                        View All
-                        <svg viewBox="0 0 24 24" fill="none" width="14" height="14" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
-                    </a>
+                    <a href="/" class="secondary" style="font-size: 12px; padding: 6px 12px;">View All &rarr;</a>
                 </div>
 
-                <div id="tableContainer">
-                    <table class="task-table" id="taskTable">
+                <div class="table-wrap">
+                    <table aria-label="Recent tasks table">
                         <thead>
                             <tr>
                                 <th>ID</th>
                                 <th>Task Name</th>
-                                <th>Priority</th>
                                 <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody id="taskTableBody">
-                            <tr><td colspan="4" class="empty-state">Loading dashboard data...</td></tr>
+                            <tr><td colspan="4" class="empty-state">Loading tasks...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </section>
 
-            <!-- Right Column: Progress & Status Breakdown -->
-            <aside>
-                <section class="panel">
-                    <div class="panel-header">
-                        <div>
-                            <h2 class="panel-title">Overall Progress</h2>
-                            <p class="panel-caption">Milestone completion tracker</p>
-                        </div>
+            <!-- Metrics & Distribution Panel -->
+            <section class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">Task Completion Progress</h2>
+                        <p class="panel-subtitle">Workspace velocity overview.</p>
                     </div>
+                </div>
 
-                    <div class="progress-meter">
-                        <div class="meter-labels">
-                            <span>Completion rate</span>
-                            <strong id="meterPercent">0%</strong>
-                        </div>
-                        <div class="meter-bar">
-                            <div class="meter-fill" id="meterFill"></div>
-                        </div>
-                        <div class="meter-labels" style="margin-top: 6px;">
-                            <span id="meterRatio">0 of 0 tasks completed</span>
-                            <span style="color: var(--green);">Target: 100%</span>
-                        </div>
+                <div class="meter-container">
+                    <div class="meter-track">
+                        <div class="meter-fill" id="meterFill"></div>
                     </div>
+                    <div class="meter-info">
+                        <span id="meterRatio">0 of 0 tasks completed</span>
+                        <strong id="meterPercent">0%</strong>
+                    </div>
+                </div>
 
-                    <h3 style="font-size: 13px; font-weight: 700; color: var(--muted); margin-top: 24px;">Status Distribution</h3>
+                <div style="margin-top: 24px;">
+                    <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--text);">Status Distribution</h3>
                     <div class="breakdown-list">
-                        <div class="breakdown-item" onclick="window.location.href='/?view=completed'" title="Filter completed tasks">
-                            <div class="breakdown-item-left">
-                                <span class="indicator-dot" style="background: var(--green);"></span>
-                                <span>Completed Tasks</span>
-                            </div>
+                        <div class="breakdown-row">
+                            <span class="breakdown-label"><span class="dot green"></span> Completed</span>
                             <strong id="distDone" style="color: var(--green);">0</strong>
                         </div>
-                        <div class="breakdown-item" onclick="window.location.href='/?view=active'" title="Filter active tasks">
-                            <div class="breakdown-item-left">
-                                <span class="indicator-dot" style="background: var(--blue);"></span>
-                                <span>In Progress</span>
-                            </div>
+                        <div class="breakdown-row">
+                            <span class="breakdown-label"><span class="dot blue"></span> In Progress</span>
                             <strong id="distProgress" style="color: var(--blue);">0</strong>
                         </div>
-                        <div class="breakdown-item" onclick="window.location.href='/?view=active'" title="Filter pending tasks">
-                            <div class="breakdown-item-left">
-                                <span class="indicator-dot" style="background: var(--amber);"></span>
-                                <span>Pending Review</span>
-                            </div>
+                        <div class="breakdown-row">
+                            <span class="breakdown-label"><span class="dot amber"></span> Pending</span>
                             <strong id="distPending" style="color: var(--amber);">0</strong>
                         </div>
                     </div>
-                </section>
-            </aside>
+                </div>
+            </section>
         </div>
     </main>
 </div>
 
-<!-- Settings Modal Overlay -->
+<!-- Add Task Modal Dialog -->
+<div class="modal-overlay" id="dashboardTaskModal" role="dialog" aria-modal="true" aria-labelledby="dashTaskModalTitle">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 id="dashTaskModalTitle">+ Create New Task</h3>
+            <button class="close-btn" id="closeDashModalBtn" aria-label="Close dialog">&times;</button>
+        </div>
+        <form id="dashTaskForm" onsubmit="event.preventDefault();">
+            <div class="modal-content">
+                <div>
+                    <label for="dashTaskTitleInput" style="display:block; margin-bottom:6px; font-weight:600; font-size:12px;">Task Title *</label>
+                    <input type="text" class="modal-input" id="dashTaskTitleInput" placeholder="What needs to be accomplished?" required autocomplete="off">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="secondary" id="cancelDashModalBtn">Cancel</button>
+                <button type="submit" class="primary" id="submitDashModalBtn">Create Task</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Settings Modal Overlay (compatibility) -->
 <div class="modal-overlay" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
     <div class="modal-card">
         <div class="modal-header">
@@ -855,29 +921,18 @@
             <button class="close-btn" id="closeSettingsBtn" aria-label="Close settings">&times;</button>
         </div>
         <div class="modal-content">
-            <div class="setting-group">
-                <div>
-                    <strong>Workspace</strong>
-                    <div style="color: var(--muted); font-size: 11px;">Production Environment (AWS EC2)</div>
-                </div>
-                <span class="badge badge-progress">Active</span>
-            </div>
-            <div class="setting-group">
-                <div>
-                    <strong>Database Connection</strong>
-                    <div style="color: var(--muted); font-size: 11px;">PostgreSQL persistent volume</div>
-                </div>
-                <span class="badge badge-done" id="dbStatusBadge">Connected</span>
-            </div>
-            <div class="setting-group">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:var(--row-bg); border-radius:10px;">
                 <div>
                     <strong>Color Theme</strong>
                     <div style="color: var(--muted); font-size: 11px;">Select preferred interface mode</div>
                 </div>
-                <select id="themeSelect" class="filter" style="padding: 6px 10px; border-radius: 6px; background: var(--input-bg); color: var(--text); border: 1px solid var(--card-border);">
+                <select id="themeSelect" style="padding: 6px 10px; border-radius: 6px; background: var(--input-bg); color: var(--text); border: 1px solid var(--card-border);">
                     <option value="dark">Dark Mode</option>
                     <option value="light">Light Mode</option>
                 </select>
+            </div>
+            <div style="text-align:center; padding-top:6px;">
+                <a href="/settings" style="color:var(--blue); font-weight:600; font-size:13px;">Open Dedicated Settings Page &rarr;</a>
             </div>
         </div>
         <div class="modal-footer">
@@ -886,14 +941,28 @@
     </div>
 </div>
 
+<!-- Toast Feedback -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+    <span class="toast-icon">✓</span>
+    <span id="toastMsg">Action completed successfully</span>
+</div>
+
 <script>
+    const $ = (id) => document.getElementById(id);
     let tasks = [];
-    const $ = id => document.getElementById(id);
+    let completed = new Set();
+
+    function showToast(msg) {
+        const toast = $('toast');
+        $('toastMsg').textContent = msg || 'Action completed';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2800);
+    }
 
     function setupThemeToggle() {
         const toggleBtn = $('themeToggle');
         const themeSelect = $('themeSelect');
-        
+
         function setTheme(next) {
             document.documentElement.setAttribute('data-theme', next);
             localStorage.setItem('taskflow-theme', next);
@@ -913,9 +982,7 @@
         if (themeSelect) {
             const current = document.documentElement.getAttribute('data-theme') || 'dark';
             themeSelect.value = current;
-            themeSelect.addEventListener('change', (e) => {
-                setTheme(e.target.value);
-            });
+            themeSelect.addEventListener('change', (e) => setTheme(e.target.value));
         }
     }
 
@@ -952,30 +1019,43 @@
     }
 
     function setupSettingsModal() {
-        const navBtn = $('navSettingsBtn');
         const modal = $('settingsModal');
         const closeBtn = $('closeSettingsBtn');
         const saveBtn = $('saveSettingsBtn');
-
         if (!modal) return;
-
-        function openModal() {
-            modal.classList.add('show');
-            const current = document.documentElement.getAttribute('data-theme') || 'dark';
-            if ($('themeSelect')) $('themeSelect').value = current;
-        }
-
-        function closeModal() {
-            modal.classList.remove('show');
-        }
-
-        if (navBtn) navBtn.addEventListener('click', openModal);
+        function closeModal() { modal.classList.remove('show'); }
         if (closeBtn) closeBtn.addEventListener('click', closeModal);
         if (saveBtn) saveBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    }
 
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
+    function setupMobileDrawer() {
+        const menuBtn = $('mobileMenuBtn');
+        const sidebar = $('sidebar');
+        const overlay = $('drawerOverlay');
+
+        if (!menuBtn || !sidebar || !overlay) return;
+
+        function openDrawer() {
+            sidebar.classList.add('open');
+            overlay.classList.add('show');
+        }
+        function closeDrawer() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+        }
+
+        menuBtn.addEventListener('click', openDrawer);
+        overlay.addEventListener('click', closeDrawer);
+    }
+
+    function loadCompletedFromStorage() {
+        try {
+            const raw = localStorage.getItem('taskflow-completed-ids');
+            if (raw) completed = new Set(JSON.parse(raw));
+        } catch (e) {
+            completed = new Set();
+        }
     }
 
     function escapeHtml(str) {
@@ -989,19 +1069,19 @@
             const resp = await fetch('/tasks');
             if (!resp.ok) throw new Error('Failed to fetch tasks');
             tasks = await resp.json();
+            loadCompletedFromStorage();
             renderDashboard();
         } catch (err) {
-            console.error('Dashboard load error:', err);
-            $('taskTableBody').innerHTML = '<tr><td colspan="4" class="empty-state">Unable to load tasks from server.</td></tr>';
+            $('taskTableBody').innerHTML = '<tr><td colspan="4" class="empty-state" style="color:var(--danger)">Failed to load live dashboard statistics. <button class="secondary" style="margin: 8px auto 0;" onclick="loadDashboard()">Retry</button></td></tr>';
         }
     }
 
     function renderDashboard() {
         const total = tasks.length;
-        
-        const completedCount = total > 0 ? Math.ceil(total * 0.4) : 0;
-        const inProgressCount = total > 0 ? Math.ceil((total - completedCount) * 0.6) : 0;
-        const pendingCount = Math.max(0, total - completedCount - inProgressCount);
+        const completedCount = tasks.filter(t => completed.has(t.id)).length;
+        const remaining = total - completedCount;
+        const inProgressCount = remaining > 0 ? Math.ceil(remaining * 0.6) : 0;
+        const pendingCount = Math.max(0, remaining - inProgressCount);
         const percent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
 
         $('cardTotal').textContent = total;
@@ -1020,51 +1100,84 @@
 
         const tbody = $('taskTableBody');
         if (total === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><br>No tasks recorded yet. Create tasks in <a href="/" style="color:var(--blue);">My Tasks</a> to populate your dashboard.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><br>No tasks recorded yet.<br><button class="primary" style="margin:10px auto 0;" onclick="openDashTaskModal()">+ Create First Task</button></td></tr>';
             return;
         }
 
-        // Render recent tasks
         const recent = tasks.slice().reverse().slice(0, 8);
-        tbody.innerHTML = recent.map((t, idx) => {
-            let statusBadge = '<span class="badge badge-progress">In Progress</span>';
-            let priorityBadge = '<span class="priority-dot priority-med"></span>Medium';
-            
-            if (idx % 3 === 0) {
-                statusBadge = '<span class="badge badge-done">Completed</span>';
-                priorityBadge = '<span class="priority-dot priority-high"></span>High';
-            } else if (idx % 3 === 2) {
-                statusBadge = '<span class="badge badge-pending">Pending</span>';
-                priorityBadge = '<span class="priority-dot priority-low"></span>Low';
-            }
+        tbody.innerHTML = recent.map((t) => {
+            const isDone = completed.has(t.id);
+            let statusBadge = isDone 
+                ? '<span class="badge badge-done">Completed</span>' 
+                : '<span class="badge badge-progress">Active</span>';
 
             return `
-                <tr style="cursor:pointer;" onclick="window.location.href='/'" title="View in My Tasks">
+                <tr>
                     <td style="color: var(--muted); font-family: monospace;">#${t.id}</td>
                     <td><strong>${escapeHtml(t.title)}</strong></td>
-                    <td>${priorityBadge}</td>
                     <td>${statusBadge}</td>
+                    <td><a href="/" style="color:var(--blue); font-weight:600; font-size:12px;">Open in Tasks &rarr;</a></td>
                 </tr>
             `;
         }).join('');
     }
 
-    $('quickAddBtn').addEventListener('click', async () => {
-        const title = prompt('Enter a new task title:');
-        if (!title || !title.trim()) return;
+    function openDashTaskModal() {
+        $('dashTaskTitleInput').value = '';
+        $('dashboardTaskModal').classList.add('show');
+        setTimeout(() => $('dashTaskTitleInput').focus(), 50);
+    }
+
+    function closeDashTaskModal() {
+        $('dashboardTaskModal').classList.remove('show');
+    }
+
+    async function handleCreateTask(e) {
+        e.preventDefault();
+        const title = $('dashTaskTitleInput').value.trim();
+        if (!title) return;
+
+        const btn = $('submitDashModalBtn');
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+
         try {
             const res = await fetch('/tasks', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: title.trim() })
+                body: JSON.stringify({ title: title })
             });
-            if (res.ok) {
-                await loadDashboard();
-            }
-        } catch (e) {
+
+            if (!res.ok) throw new Error('Failed to create task');
+
+            closeDashTaskModal();
+            await loadDashboard();
+            showToast('Task added to workspace!');
+        } catch (err) {
             alert('Failed to create task');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Create Task';
+        }
+    }
+
+    // Keyboard support: Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeDashTaskModal();
+            const modal = $('settingsModal');
+            if (modal) modal.classList.remove('show');
+            const sidebar = $('sidebar');
+            if (sidebar) sidebar.classList.remove('open');
+            const overlay = $('drawerOverlay');
+            if (overlay) overlay.classList.remove('show');
         }
     });
+
+    $('dashboardAddBtn').addEventListener('click', openDashTaskModal);
+    $('closeDashModalBtn').addEventListener('click', closeDashTaskModal);
+    $('cancelDashModalBtn').addEventListener('click', closeDashTaskModal);
+    $('dashTaskForm').addEventListener('submit', handleCreateTask);
 
     const savedWs = localStorage.getItem('taskflow-workspace-name');
     if (savedWs && $('sidebarWorkspaceName')) $('sidebarWorkspaceName').textContent = savedWs;
@@ -1072,7 +1185,17 @@
     setupThemeToggle();
     setupNotifications();
     setupSettingsModal();
+    setupMobileDrawer();
     loadDashboard();
+
+    // Auto-refresh interval from prefs
+    try {
+        const prefs = JSON.parse(localStorage.getItem('taskflow-app-prefs') || '{}');
+        const intervalSec = parseInt(prefs.refreshInterval, 10);
+        if (intervalSec && intervalSec >= 15) {
+            setInterval(loadDashboard, intervalSec * 1000);
+        }
+    } catch(e) {}
 </script>
 </body>
 </html>
