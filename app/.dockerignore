@@ -1,19 +1,19 @@
+# Python artifacts
 __pycache__/
 *.py[cod]
+*$py.class
+*.pyc
+
+# Virtual environments
 .venv/
 venv/
+
+# Environment files and secrets
 .env
-.git/
-.gitignore
 *.pem
 *.key
-tests/__pycache__/
-*.py[cod]
-.venv/
-venv/
-.env
-.git/
-.gitignore
-*.pem
-*.key
-tests/
+
+# Tests and caches
+.pytest_cache/
+.coverage
+*.log

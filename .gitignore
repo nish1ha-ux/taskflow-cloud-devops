@@ -1,11 +1,19 @@
+# Environment & Secrets
 .env
 *.pem
 *.key
 secrets/
 
-node_modules/
+# Python & Virtual Environments
 __pycache__/
+*.py[cod]
 .venv/
 venv/
+.pytest_cache/
+.coverage
+*.log
 
-.git/
+# IDE & System
+.DS_Store
+Thumbs.db
+node_modules/
