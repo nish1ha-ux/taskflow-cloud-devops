@@ -13,9 +13,9 @@ cd "$REPO_ROOT"
 git config --global --add safe.directory "$REPO_ROOT" 2>/dev/null || true
 
 # 1. Pull latest code (optional if already up-to-date)
-git fetch --all || true
+git fetch origin main || true
 git checkout main || true
-git pull origin main || true
+git reset --hard origin/main || git pull origin main || true
 
 # Stop host-level nginx if active so containerized Nginx can bind port 80/443
 if command -v systemctl >/dev/null 2>&1; then
@@ -32,9 +32,8 @@ else
 fi
 
 # 3. Check if SSL certificate is already present in docker volume
-# Inspect volume or check temporary container
 CERT_EXISTS=false
-if docker run --rm -v nginx-letsencrypt:/etc/letsencrypt alpine test -f /etc/letsencrypt/live/13-233-154-188.nip.io/fullchain.pem 2>/dev/null; then
+if docker run --rm -v taskflow-cloud-devops_nginx-letsencrypt:/etc/letsencrypt alpine test -f /etc/letsencrypt/live/13-233-154-188.nip.io/fullchain.pem 2>/dev/null; then
   CERT_EXISTS=true
 fi
 
