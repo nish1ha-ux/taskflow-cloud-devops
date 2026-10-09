@@ -92,11 +92,16 @@ continuous integration and image delivery using GitHub Actions.
                               │
                               ▼
                        💾 Named Volume
-# 📦 Deployment
+```
+
+---
+
+## 📦 Deployment
 
 [![CI](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions/workflows/ci.yml/badge.svg)](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions)
 
-## Deploy locally
+### Deploy locally
+
 
 1. **Edit the Certbot e‑mail**
    Open `docker-compose.yml` and replace `--email __YOUR_EMAIL_HERE__` with your real e‑mail address in the `certbot` service.
