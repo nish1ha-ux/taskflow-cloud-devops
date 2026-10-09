@@ -86,3 +86,65 @@ def test_create_task_null_title(client):
     assert response.status_code == 400
     data = response.get_json()
     assert data["error"] == "Task title is required"
+
+
+# ── Tasks retrieval and creation ─────────────────────────────────
+
+
+def test_get_tasks_success(client):
+    """GET /tasks returns 200 with list of tasks."""
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value = mock_cur
+    mock_cur.fetchall.return_value = [(1, "First task"), (2, "Second task")]
+
+    with patch("app.app.get_db_connection", return_value=mock_conn):
+        response = client.get("/tasks")
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert len(data) == 2
+    assert data[0] == {"id": 1, "title": "First task"}
+    assert data[1] == {"id": 2, "title": "Second task"}
+    mock_cur.execute.assert_called_once_with(
+        "SELECT id, title FROM tasks ORDER BY id"
+    )
+    mock_cur.close.assert_called_once()
+    mock_conn.close.assert_called_once()
+
+
+def test_create_task_success(client):
+    """POST /tasks with valid title creates a task and returns 201."""
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value = mock_cur
+    mock_cur.fetchone.return_value = (10, "New Test Task")
+
+    with patch("app.app.get_db_connection", return_value=mock_conn):
+        response = client.post("/tasks", json={"title": "New Test Task"})
+
+    assert response.status_code == 201
+    data = response.get_json()
+    assert data == {"id": 10, "title": "New Test Task"}
+    mock_conn.commit.assert_called_once()
+    mock_cur.close.assert_called_once()
+    mock_conn.close.assert_called_once()
+
+
+def test_init_db():
+    """init_db creates tasks table if it does not exist."""
+    from app.app import init_db
+
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value = mock_cur
+
+    with patch("app.app.get_db_connection", return_value=mock_conn):
+        init_db()
+
+    mock_cur.execute.assert_called_once()
+    query = mock_cur.execute.call_args[0][0]
+    assert "CREATE TABLE IF NOT EXISTS tasks" in query
+    mock_conn.commit.assert_called_once()
+    mock_cur.close.assert_called_once()
+    mock_conn.close.assert_called_once()
