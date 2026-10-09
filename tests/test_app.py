@@ -80,9 +80,24 @@ def test_settings_returns_200(client):
     assert b'id="accountSection"' in response.data
     assert b'id="notificationsSection"' in response.data
     assert b'id="appPreferencesSection"' in response.data
+    assert b'id="themeToggle"' in response.data
+    assert b'id="notificationBtn"' in response.data
+    assert b'href="/system-overview"' in response.data
+    assert b"taskflow-theme" in response.data
+    assert b"taskflow-workspace-name" in response.data
+
+
+def test_system_overview_returns_200(client):
+    """GET /system-overview renders template and returns 200."""
+    response = client.get("/system-overview")
+    assert response.status_code == 200
+    assert b"About TaskFlow Cloud DevOps" in response.data
+    assert b"Platform Specifications" in response.data
+    assert b"Deployment Topology" in response.data
     assert b'id="aboutSection"' in response.data
     assert b'id="themeToggle"' in response.data
     assert b'id="notificationBtn"' in response.data
+    assert b'id="refreshHealthBtn"' in response.data
     assert b"taskflow-theme" in response.data
     assert b"taskflow-workspace-name" in response.data
 

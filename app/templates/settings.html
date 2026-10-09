@@ -693,6 +693,10 @@
                 <svg viewBox="0 0 24 24" fill="none"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19 13.5 1.3 1-.2 1.8-1.7 1-1.5-.8-1.5.9-.4 1.8-1.7.7-1.6-1.2-1.6.1-1.2 1.4-1.8-.5-.6-1.7.8-1.5-.8-1.4-1.8-.4-.7-1.7 1.1-1.6-.1-1.6-1.3-1.2.5-1.8 1.8-.5 1.4.8 1.4-.8.5-1.8 1.7-.6 1.6 1.1 1.6-.1 1.2-1.4 1.8.5.6 1.7-.8 1.5.8 1.4 1.8.4.7 1.7Z"/></svg>
                 <span>Settings</span>
             </a>
+            <a href="/system-overview" id="navOverviewLink">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <span>System Overview</span>
+            </a>
         </nav>
         <div class="sidebar-bottom">
             <div class="workspace">
@@ -982,50 +986,6 @@
                 <div class="btn-group">
                     <button type="button" class="primary-btn" id="saveAllPrefsBtn">Save All Preferences</button>
                     <button type="button" class="secondary-btn" id="resetAllPrefsBtn">Restore Defaults</button>
-                </div>
-            </section>
-
-            <!-- About Section -->
-            <section class="settings-card" id="aboutSection">
-                <div class="section-header">
-                    <div class="section-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                    </div>
-                    <div>
-                        <h2 class="section-title">About TaskFlow Cloud DevOps</h2>
-                        <p class="section-subtitle">System details, build versions, and operational architecture.</p>
-                    </div>
-                </div>
-
-                <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
-                    TaskFlow is a cloud-native, containerized task management platform engineered for continuous delivery on AWS. It features a hardened Nginx reverse proxy with automated Let's Encrypt TLS termination, PostgreSQL transactional persistence, and automated CI/CD deployment pipelines.
-                </p>
-
-                <div class="meta-grid">
-                    <div class="meta-item">
-                        <div class="meta-label">Application Version</div>
-                        <div class="meta-value">v1.4.0 (Production)</div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">Environment</div>
-                        <div class="meta-value">AWS EC2 (ap-south-1)</div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">Security & TLS</div>
-                        <div class="meta-value">Let's Encrypt (HTTPS 443)</div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">Backend Stack</div>
-                        <div class="meta-value">Python Flask & PostgreSQL 15</div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">Continuous Delivery</div>
-                        <div class="meta-value">GitHub Actions + Docker Compose</div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">System Health</div>
-                        <div class="meta-value" style="color: var(--green);">● Operational</div>
-                    </div>
                 </div>
             </section>
         </div>

@@ -51,6 +51,11 @@ def settings():
     return render_template("settings.html")
 
 
+@app.route("/system-overview")
+def system_overview():
+    return render_template("system_overview.html")
+
+
 @app.route("/health")
 def health():
     """Health check that verifies the database is reachable."""
