@@ -50,9 +50,11 @@ def test_health_db_unreachable(client):
 
 
 def test_home_returns_200(client):
-    """GET / renders the index template and returns 200."""
+    """GET / renders the index template with theme toggle and returns 200."""
     response = client.get("/")
     assert response.status_code == 200
+    assert b'id="themeToggle"' in response.data
+    assert b"taskflow-theme" in response.data
 
 
 def test_dashboard_returns_200(client):
@@ -61,6 +63,8 @@ def test_dashboard_returns_200(client):
     assert response.status_code == 200
     assert b"Welcome to Dashboard" in response.data
     assert b"Total Tasks" in response.data
+    assert b'id="themeToggle"' in response.data
+    assert b"taskflow-theme" in response.data
 
 
 # ── Task creation validation ────────────────────────────────────
