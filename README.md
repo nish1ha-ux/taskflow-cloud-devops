@@ -92,3 +92,39 @@ continuous integration and image delivery using GitHub Actions.
                               │
                               ▼
                        💾 Named Volume
+# 📦 Deployment
+
+[![CI](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions/workflows/ci.yml/badge.svg)](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions)
+
+## Deploy locally
+
+1. **Edit the Certbot e‑mail**
+   Open `docker-compose.yml` and replace `--email __YOUR_EMAIL_HERE__` with your real e‑mail address in the `certbot` service.
+
+2. **Make the script executable**
+   ```bash
+   chmod +x scripts/deploy.sh
+   ```
+
+3. **Run the deployment script**
+   ```bash
+   ./scripts/deploy.sh
+   ```
+   The script will:
+   * Pull the latest code and rebuild the Flask image.
+   * Start the stack on ports **80** and **443** (initially HTTP‑only).
+   * Wait for the HTTP `/health` endpoint to become healthy.
+   * If a Let’s Encrypt certificate already exists, it will switch Nginx to the HTTPS configuration and verify the HTTPS health endpoint.
+   * If the certificate is missing, the script will **not** run Certbot automatically. Instead it prints the exact command you must run manually:
+   ```bash
+   docker compose run --rm certbot
+   ```
+   After running the above command, re‑run `./scripts/deploy.sh` to switch to HTTPS.
+
+## Notes
+
+* PostgreSQL data lives in the external Docker volume `taskflow-cloud-devops_postgres_data`; the deployment script never removes or recreates this volume.
+* Nginx selects its configuration via the environment variable `NGINX_CONF` (defaults to `default-http.conf`). The deploy script handles the switch to `default-https.conf` automatically when a certificate is present.
+* Flask now uses `werkzeug.middleware.proxy_fix.ProxyFix` to correctly interpret `X‑Forwarded‑For`, `X‑Forwarded‑Proto`, etc., so real client IPs are logged.
+
+---

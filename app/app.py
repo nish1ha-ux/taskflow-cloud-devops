@@ -1,8 +1,11 @@
 import os
 import psycopg2
 from flask import Flask, jsonify, request, render_template
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
+# Trust proxy headers from Nginx reverse proxy
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 

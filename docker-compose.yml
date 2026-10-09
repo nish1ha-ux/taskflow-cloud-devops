@@ -1,1 +1,85 @@
-{"services":{"app":{"build":"./app","container_name":"taskflow-app","ports":["8000:8000"],"depends_on":{"postgres":{"condition":"service_healthy"}},"environment":{"DATABASE_URL":"postgresql://taskflow:taskflow@postgres:5432/taskflow"},"restart":"unless-stopped"},"postgres":{"image":"postgres:16","container_name":"taskflow-postgres","environment":{"POSTGRES_DB":"taskflow","POSTGRES_USER":"taskflow","POSTGRES_PASSWORD":"taskflow"},"volumes":["postgres_data:/var/lib/postgresql/data"],"healthcheck":{"test":["CMD-SHELL","pg_isready -U taskflow -d taskflow"],"interval":"5s","timeout":"5s","retries":5},"restart":"unless-stopped"}},"volumes":{"postgres_data":{}}}
+version: "3.8"
+
+services:
+  # -------------------------------------------------
+  # 1️⃣ Flask application (no host‑published port)
+  # -------------------------------------------------
+  app:
+    build:
+      context: ./app
+    container_name: taskflow_app
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://taskflow:taskflow@postgres:5432/taskflow
+    networks:
+      - webnet
+    depends_on:
+      - postgres
+
+  # -------------------------------------------------
+  # 2️⃣ PostgreSQL (preserve existing image & external volume)
+  # -------------------------------------------------
+  postgres:
+    image: postgres:16
+    container_name: taskflow_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: taskflow
+      POSTGRES_PASSWORD: taskflow
+      POSTGRES_DB: taskflow
+    volumes:
+      - taskflow-cloud-devops_postgres_data:/var/lib/postgresql/data
+    networks:
+      - webnet
+
+  # -------------------------------------------------
+  # 3️⃣ Nginx reverse‑proxy (starts HTTP‑only)
+  # -------------------------------------------------
+  nginx:
+    image: nginx:stable-alpine
+    container_name: taskflow_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/http.conf:/etc/nginx/conf.d/http.conf:ro
+      - ./nginx/https.conf:/etc/nginx/conf.d/https.conf:ro
+      - ./nginx/${NGINX_CONF:-default-http.conf}:/etc/nginx/conf.d/default.conf:ro   # switched via env var
+      - nginx-letsencrypt:/etc/letsencrypt                     # shared cert store (read‑only)
+      - ./nginx/www:/var/www/certbot:ro                        # ACME web‑root (read‑only for Nginx)
+    networks:
+      - webnet
+    depends_on:
+      - app
+
+  # -------------------------------------------------
+  # 4️⃣ Certbot – one‑shot container (run manually after Nginx HTTP is up)
+  # -------------------------------------------------
+  certbot:
+    image: certbot/certbot:latest
+    container_name: taskflow_certbot
+    restart: "no"
+    command: >
+      certonly --webroot
+      --webroot-path /var/www/certbot
+      --agree-tos
+      --non-interactive
+      --email __YOUR_EMAIL_HERE__
+      -d 13-233-154-188.nip.io
+    volumes:
+      - ./nginx/www:/var/www/certbot:rw   # Certbot writes challenge files
+      - nginx-letsencrypt:/etc/letsencrypt
+    networks:
+      - webnet
+    # Note: not started automatically – run with `docker compose run --rm certbot`
+
+networks:
+  webnet:
+    driver: bridge
+
+volumes:
+  taskflow-cloud-devops_postgres_data:
+    external: true
+  nginx-letsencrypt:
+    driver: local
