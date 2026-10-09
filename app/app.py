@@ -1,4 +1,5 @@
 import os
+import datetime
 import psycopg2
 from flask import Flask, jsonify, request, render_template
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -21,13 +22,33 @@ def init_db():
     cur.execute("""
         CREATE TABLE IF NOT EXISTS tasks (
             id SERIAL PRIMARY KEY,
-            title TEXT NOT NULL
+            title TEXT NOT NULL,
+            description TEXT,
+            deadline DATE
         )
+    """)
+
+    # Safe idempotent migration for existing databases
+    cur.execute("""
+        ALTER TABLE tasks ADD COLUMN IF NOT EXISTS description TEXT;
+        ALTER TABLE tasks ADD COLUMN IF NOT EXISTS deadline DATE;
     """)
 
     conn.commit()
     cur.close()
     conn.close()
+
+
+def parse_deadline(val):
+    if not val:
+        return None
+    val_str = str(val).strip()
+    if not val_str:
+        return None
+    try:
+        return datetime.date.fromisoformat(val_str)
+    except ValueError:
+        raise ValueError("Invalid deadline format. Expected YYYY-MM-DD.")
 
 
 # init_db() is NOT called at module level so the module can be imported
@@ -81,14 +102,21 @@ def get_tasks():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT id, title FROM tasks ORDER BY id")
+    cur.execute(
+        "SELECT id, title, description, deadline FROM tasks ORDER BY id"
+    )
     rows = cur.fetchall()
 
     cur.close()
     conn.close()
 
     tasks = [
-        {"id": row[0], "title": row[1]}
+        {
+            "id": row[0],
+            "title": row[1],
+            "description": row[2] if row[2] is not None else "",
+            "deadline": row[3].isoformat() if row[3] is not None else None,
+        }
         for row in rows
     ]
 
@@ -99,17 +127,36 @@ def get_tasks():
 def create_task():
     data = request.get_json()
 
-    if not data or "title" not in data:
+    if not data or "title" not in data or not str(data["title"]).strip():
         return jsonify({
             "error": "Task title is required"
+        }), 400
+
+    title = str(data["title"]).strip()
+    description = data.get("description")
+    if description is not None:
+        description = str(description).strip()
+        if not description:
+            description = None
+
+    deadline_raw = data.get("deadline")
+    try:
+        deadline = parse_deadline(deadline_raw)
+    except ValueError as e:
+        return jsonify({
+            "error": str(e)
         }), 400
 
     conn = get_db_connection()
     cur = conn.cursor()
 
     cur.execute(
-        "INSERT INTO tasks (title) VALUES (%s) RETURNING id, title",
-        (data["title"],)
+        """
+        INSERT INTO tasks (title, description, deadline)
+        VALUES (%s, %s, %s)
+        RETURNING id, title, description, deadline
+        """,
+        (title, description, deadline)
     )
 
     row = cur.fetchone()
@@ -120,7 +167,9 @@ def create_task():
 
     return jsonify({
         "id": row[0],
-        "title": row[1]
+        "title": row[1],
+        "description": row[2] if row[2] is not None else "",
+        "deadline": row[3].isoformat() if row[3] is not None else None,
     }), 201
 
 
@@ -133,12 +182,32 @@ def update_task(task_id):
             "error": "Task title is required"
         }), 400
 
+    title = str(data["title"]).strip()
+    description = data.get("description")
+    if description is not None:
+        description = str(description).strip()
+        if not description:
+            description = None
+
+    deadline_raw = data.get("deadline")
+    try:
+        deadline = parse_deadline(deadline_raw)
+    except ValueError as e:
+        return jsonify({
+            "error": str(e)
+        }), 400
+
     conn = get_db_connection()
     cur = conn.cursor()
 
     cur.execute(
-        "UPDATE tasks SET title = %s WHERE id = %s RETURNING id, title",
-        (str(data["title"]).strip(), task_id)
+        """
+        UPDATE tasks
+        SET title = %s, description = %s, deadline = %s
+        WHERE id = %s
+        RETURNING id, title, description, deadline
+        """,
+        (title, description, deadline, task_id)
     )
     row = cur.fetchone()
 
@@ -151,7 +220,9 @@ def update_task(task_id):
 
     return jsonify({
         "id": row[0],
-        "title": row[1]
+        "title": row[1],
+        "description": row[2] if row[2] is not None else "",
+        "deadline": row[3].isoformat() if row[3] is not None else None,
     }), 200
 
 

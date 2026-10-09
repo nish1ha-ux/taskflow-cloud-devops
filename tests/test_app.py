@@ -140,10 +140,14 @@ def test_create_task_null_title(client):
 
 def test_get_tasks_success(client):
     """GET /tasks returns 200 with list of tasks."""
+    import datetime
     mock_conn = MagicMock()
     mock_cur = MagicMock()
     mock_conn.cursor.return_value = mock_cur
-    mock_cur.fetchall.return_value = [(1, "First task"), (2, "Second task")]
+    mock_cur.fetchall.return_value = [
+        (1, "First task", "A sample description", datetime.date(2026, 10, 15)),
+        (2, "Second task", None, None),
+    ]
 
     with patch("app.app.get_db_connection", return_value=mock_conn):
         response = client.get("/tasks")
@@ -151,49 +155,158 @@ def test_get_tasks_success(client):
     assert response.status_code == 200
     data = response.get_json()
     assert len(data) == 2
-    assert data[0] == {"id": 1, "title": "First task"}
-    assert data[1] == {"id": 2, "title": "Second task"}
+    assert data[0] == {
+        "id": 1,
+        "title": "First task",
+        "description": "A sample description",
+        "deadline": "2026-10-15",
+    }
+    assert data[1] == {
+        "id": 2,
+        "title": "Second task",
+        "description": "",
+        "deadline": None,
+    }
     mock_cur.execute.assert_called_once_with(
-        "SELECT id, title FROM tasks ORDER BY id"
+        "SELECT id, title, description, deadline FROM tasks ORDER BY id"
     )
     mock_cur.close.assert_called_once()
     mock_conn.close.assert_called_once()
 
 
-def test_create_task_success(client):
-    """POST /tasks with valid title creates a task and returns 201."""
+def test_create_task_title_only(client):
+    """POST /tasks with only title creates a task and returns 201."""
     mock_conn = MagicMock()
     mock_cur = MagicMock()
     mock_conn.cursor.return_value = mock_cur
-    mock_cur.fetchone.return_value = (10, "New Test Task")
+    mock_cur.fetchone.return_value = (10, "New Test Task", None, None)
 
     with patch("app.app.get_db_connection", return_value=mock_conn):
         response = client.post("/tasks", json={"title": "New Test Task"})
 
     assert response.status_code == 201
     data = response.get_json()
-    assert data == {"id": 10, "title": "New Test Task"}
+    assert data == {
+        "id": 10,
+        "title": "New Test Task",
+        "description": "",
+        "deadline": None,
+    }
     mock_conn.commit.assert_called_once()
     mock_cur.close.assert_called_once()
     mock_conn.close.assert_called_once()
 
 
-def test_update_task_success(client):
-    """PUT /tasks/<id> updates task title and returns 200."""
+def test_create_task_with_desc_and_deadline(client):
+    """POST /tasks with description and deadline creates task."""
+    import datetime
     mock_conn = MagicMock()
     mock_cur = MagicMock()
     mock_conn.cursor.return_value = mock_cur
-    mock_cur.fetchone.return_value = (5, "Updated Task Title")
+    mock_cur.fetchone.return_value = (
+        11,
+        "Complete Project",
+        "Detailed step by step plan",
+        datetime.date(2026, 12, 31),
+    )
 
     with patch("app.app.get_db_connection", return_value=mock_conn):
-        response = client.put("/tasks/5", json={"title": "Updated Task Title"})
+        response = client.post("/tasks", json={
+            "title": "Complete Project",
+            "description": "Detailed step by step plan",
+            "deadline": "2026-12-31",
+        })
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     data = response.get_json()
-    assert data == {"id": 5, "title": "Updated Task Title"}
+    assert data == {
+        "id": 11,
+        "title": "Complete Project",
+        "description": "Detailed step by step plan",
+        "deadline": "2026-12-31",
+    }
     mock_conn.commit.assert_called_once()
     mock_cur.close.assert_called_once()
     mock_conn.close.assert_called_once()
+
+
+def test_create_task_invalid_deadline(client):
+    """POST /tasks with invalid deadline string returns 400."""
+    response = client.post("/tasks", json={
+        "title": "Invalid Date Task",
+        "deadline": "not-a-valid-date",
+    })
+    assert response.status_code == 400
+    data = response.get_json()
+    assert "Invalid deadline format" in data["error"]
+
+
+def test_update_task_success(client):
+    """PUT /tasks/<id> updates task and returns 200."""
+    import datetime
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value = mock_cur
+    mock_cur.fetchone.return_value = (
+        5,
+        "Updated Task Title",
+        "Updated Description",
+        datetime.date(2026, 11, 20),
+    )
+
+    with patch("app.app.get_db_connection", return_value=mock_conn):
+        response = client.put("/tasks/5", json={
+            "title": "Updated Task Title",
+            "description": "Updated Description",
+            "deadline": "2026-11-20",
+        })
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data == {
+        "id": 5,
+        "title": "Updated Task Title",
+        "description": "Updated Description",
+        "deadline": "2026-11-20",
+    }
+    mock_conn.commit.assert_called_once()
+    mock_cur.close.assert_called_once()
+    mock_conn.close.assert_called_once()
+
+
+def test_update_task_clear_optional_fields(client):
+    """PUT /tasks/<id> clearing description and deadline returns 200."""
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value = mock_cur
+    mock_cur.fetchone.return_value = (5, "Cleaned Task", None, None)
+
+    with patch("app.app.get_db_connection", return_value=mock_conn):
+        response = client.put("/tasks/5", json={
+            "title": "Cleaned Task",
+            "description": "",
+            "deadline": None,
+        })
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data == {
+        "id": 5,
+        "title": "Cleaned Task",
+        "description": "",
+        "deadline": None,
+    }
+
+
+def test_update_task_invalid_deadline(client):
+    """PUT /tasks/<id> with invalid deadline returns 400."""
+    response = client.put("/tasks/5", json={
+        "title": "Valid Title",
+        "deadline": "invalid-deadline",
+    })
+    assert response.status_code == 400
+    data = response.get_json()
+    assert "Invalid deadline format" in data["error"]
 
 
 def test_update_task_not_found(client):
@@ -254,7 +367,7 @@ def test_delete_task_not_found(client):
 
 
 def test_init_db():
-    """init_db creates tasks table if it does not exist."""
+    """init_db creates tasks table and migrates columns if needed."""
     from app.app import init_db
 
     mock_conn = MagicMock()
@@ -264,9 +377,16 @@ def test_init_db():
     with patch("app.app.get_db_connection", return_value=mock_conn):
         init_db()
 
-    mock_cur.execute.assert_called_once()
-    query = mock_cur.execute.call_args[0][0]
-    assert "CREATE TABLE IF NOT EXISTS tasks" in query
+    assert mock_cur.execute.call_count == 2
+    create_call = mock_cur.execute.call_args_list[0][0][0]
+    alter_call = mock_cur.execute.call_args_list[1][0][0]
+    assert "CREATE TABLE IF NOT EXISTS tasks" in create_call
+    assert "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS description" in (
+        alter_call
+    )
+    assert "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS deadline" in (
+        alter_call
+    )
     mock_conn.commit.assert_called_once()
     mock_cur.close.assert_called_once()
     mock_conn.close.assert_called_once()

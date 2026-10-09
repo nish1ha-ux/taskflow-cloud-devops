@@ -603,6 +603,51 @@
             outline: none;
             box-shadow: 0 0 0 3px rgba(109,140,255,.15);
         }
+        textarea.modal-input {
+            resize: vertical;
+            min-height: 75px;
+            font-family: inherit;
+            line-height: 1.45;
+        }
+        input[type="date"].modal-input {
+            color-scheme: dark;
+        }
+        [data-theme="light"] input[type="date"].modal-input {
+            color-scheme: light;
+        }
+
+        .deadline-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 7px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .deadline-badge.overdue {
+            background: rgba(255, 127, 148, 0.16);
+            color: var(--danger);
+            border: 1px solid rgba(255, 127, 148, 0.35);
+        }
+        .deadline-badge.today {
+            background: rgba(245, 158, 11, 0.16);
+            color: var(--amber);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+        }
+        .deadline-badge.upcoming {
+            background: rgba(109, 140, 255, 0.14);
+            color: var(--blue);
+        }
+        .deadline-badge.none {
+            color: var(--muted);
+            font-size: 11px;
+        }
+        .deadline-badge.completed {
+            background: var(--badge-done-bg);
+            color: var(--badge-done-text);
+        }
+
         .modal-footer {
             margin-top: 22px;
             display: flex;
@@ -843,12 +888,13 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Task Name</th>
+                                <th>Deadline</th>
                                 <th>Status</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
                         <tbody id="taskTableBody">
-                            <tr><td colspan="4" class="empty-state">Loading tasks...</td></tr>
+                            <tr><td colspan="5" class="empty-state">Loading tasks...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -907,6 +953,14 @@
                 <div>
                     <label for="dashTaskTitleInput" style="display:block; margin-bottom:6px; font-weight:600; font-size:12px;">Task Title *</label>
                     <input type="text" class="modal-input" id="dashTaskTitleInput" placeholder="What needs to be accomplished?" required autocomplete="off">
+                </div>
+                <div>
+                    <label for="dashTaskDescInput" style="display:block; margin-bottom:6px; font-weight:600; font-size:12px;">Description <span style="color:var(--muted); font-weight: normal;">(optional)</span></label>
+                    <textarea class="modal-input" id="dashTaskDescInput" rows="3" placeholder="Add additional details, notes, or context..."></textarea>
+                </div>
+                <div>
+                    <label for="dashTaskDeadlineInput" style="display:block; margin-bottom:6px; font-weight:600; font-size:12px;">Deadline <span style="color:var(--muted); font-weight: normal;">(optional)</span></label>
+                    <input type="date" class="modal-input" id="dashTaskDeadlineInput">
                 </div>
             </div>
             <div class="modal-footer">
@@ -1063,9 +1117,48 @@
     }
 
     function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
         const d = document.createElement('div');
-        d.textContent = str;
+        d.textContent = String(str);
         return d.innerHTML;
+    }
+
+    function formatDeadlineBadge(deadline, isDone) {
+        if (!deadline) {
+            return '<span class="deadline-badge none">No deadline</span>';
+        }
+        const parts = String(deadline).split('-');
+        if (parts.length !== 3) return '<span class="deadline-badge none">No deadline</span>';
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        const dueDate = new Date(year, month, day);
+
+        const formatted = dueDate.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        if (isDone) {
+            return `<span class="deadline-badge completed" title="Task completed">✓ ${formatted}</span>`;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const diffTime = dueDate.getTime() - today.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 0) {
+            const daysAgo = Math.abs(diffDays);
+            return `<span class="deadline-badge overdue" title="Overdue by ${daysAgo} day${daysAgo > 1 ? 's' : ''}">⚠️ Overdue (${formatted})</span>`;
+        } else if (diffDays === 0) {
+            return `<span class="deadline-badge today" title="Due today">🔥 Due Today</span>`;
+        } else if (diffDays === 1) {
+            return `<span class="deadline-badge upcoming" title="Due tomorrow">📅 Due Tomorrow</span>`;
+        } else {
+            return `<span class="deadline-badge upcoming" title="Due on ${formatted}">📅 Due ${formatted}</span>`;
+        }
     }
 
     async function loadDashboard() {
@@ -1076,7 +1169,7 @@
             loadCompletedFromStorage();
             renderDashboard();
         } catch (err) {
-            $('taskTableBody').innerHTML = '<tr><td colspan="4" class="empty-state" style="color:var(--danger)">Failed to load live dashboard statistics. <button class="secondary" style="margin: 8px auto 0;" onclick="loadDashboard()">Retry</button></td></tr>';
+            $('taskTableBody').innerHTML = '<tr><td colspan="5" class="empty-state" style="color:var(--danger)">Failed to load live dashboard statistics. <button class="secondary" style="margin: 8px auto 0;" onclick="loadDashboard()">Retry</button></td></tr>';
         }
     }
 
@@ -1104,23 +1197,32 @@
 
         const tbody = $('taskTableBody');
         if (total === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><br>No tasks recorded yet.<br><button class="primary" style="margin:10px auto 0;" onclick="openDashTaskModal()">+ Create First Task</button></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><br>No tasks recorded yet.<br><button class="primary" style="margin:10px auto 0;" onclick="openDashTaskModal()">+ Create First Task</button></td></tr>';
             return;
         }
 
         const recent = tasks.slice().reverse().slice(0, 8);
         tbody.innerHTML = recent.map((t) => {
             const isDone = completed.has(t.id);
+            const deadlineBadge = formatDeadlineBadge(t.deadline, isDone);
             let statusBadge = isDone 
                 ? '<span class="badge badge-done">Completed</span>' 
                 : '<span class="badge badge-progress">Active</span>';
 
+            const descSnippet = t.description 
+                ? `<div style="font-size:11px; color:var(--muted); margin-top:2px; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(t.description)}</div>`
+                : '';
+
             return `
                 <tr>
                     <td style="color: var(--muted); font-family: monospace;">#${t.id}</td>
-                    <td><strong>${escapeHtml(t.title)}</strong></td>
+                    <td>
+                        <strong>${escapeHtml(t.title)}</strong>
+                        ${descSnippet}
+                    </td>
+                    <td>${deadlineBadge}</td>
                     <td>${statusBadge}</td>
-                    <td><a href="/" style="color:var(--blue); font-weight:600; font-size:12px;">Open in Tasks &rarr;</a></td>
+                    <td><a href="/" style="color:var(--blue); font-weight:600; font-size:12px;">Open &rarr;</a></td>
                 </tr>
             `;
         }).join('');
@@ -1128,6 +1230,8 @@
 
     function openDashTaskModal() {
         $('dashTaskTitleInput').value = '';
+        $('dashTaskDescInput').value = '';
+        $('dashTaskDeadlineInput').value = '';
         $('dashboardTaskModal').classList.add('show');
         setTimeout(() => $('dashTaskTitleInput').focus(), 50);
     }
@@ -1141,6 +1245,9 @@
         const title = $('dashTaskTitleInput').value.trim();
         if (!title) return;
 
+        const description = $('dashTaskDescInput').value.trim() || null;
+        const deadline = $('dashTaskDeadlineInput').value.trim() || null;
+
         const btn = $('submitDashModalBtn');
         btn.disabled = true;
         btn.textContent = 'Saving...';
@@ -1149,16 +1256,23 @@
             const res = await fetch('/tasks', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: title })
+                body: JSON.stringify({
+                    title: title,
+                    description: description,
+                    deadline: deadline
+                })
             });
 
-            if (!res.ok) throw new Error('Failed to create task');
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || 'Failed to create task');
+            }
 
             closeDashTaskModal();
             await loadDashboard();
             showToast('Task added to workspace!');
         } catch (err) {
-            alert('Failed to create task');
+            alert(err.message || 'Failed to create task');
         } finally {
             btn.disabled = false;
             btn.textContent = 'Create Task';
