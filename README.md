@@ -191,7 +191,7 @@ required for routes that access the database.
 | Variable       | Required | Description                          |
 |----------------|----------|--------------------------------------|
 | `DATABASE_URL` | Yes      | PostgreSQL connection string         |
-| `NGINX_CONF`   | No       | Nginx config file (default: `default-http.conf`) |
+| `NGINX_CONF`   | No       | Nginx config file (default: `http.conf` or `https.conf`) |
 
 ---
 
