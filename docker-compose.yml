@@ -5,6 +5,7 @@ services:
   # 1️⃣ Flask application (no host‑published port)
   # -------------------------------------------------
   app:
+    image: ${APP_IMAGE:-ghcr.io/nish1ha-ux/taskflow:latest}
     build:
       context: ./app
     container_name: taskflow_app

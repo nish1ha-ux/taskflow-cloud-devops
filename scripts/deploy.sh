@@ -9,10 +9,13 @@ set -euo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
 
-# 1. Pull latest code (optional if already up‑to‑date)
-git fetch --all
-git checkout main
-git pull origin main
+# Safe directory configuration
+git config --global --add safe.directory "$REPO_ROOT" 2>/dev/null || true
+
+# 1. Pull latest code (optional if already up-to-date)
+git fetch --all || true
+git checkout main || true
+git pull origin main || true
 
 # Stop host-level nginx if active so containerized Nginx can bind port 80/443
 if command -v systemctl >/dev/null 2>&1; then
@@ -21,45 +24,58 @@ if command -v systemctl >/dev/null 2>&1; then
 fi
 
 # 2. Build or pull images
-docker compose build app
+if [ -n "${APP_IMAGE:-}" ]; then
+  echo "📥 Pulling image $APP_IMAGE..."
+  docker pull "$APP_IMAGE" || docker compose build app
+else
+  docker compose pull app 2>/dev/null || docker compose build app
+fi
 
-# 3. Bring up the stack (keep existing volumes, do not delete data)
-docker compose up -d --remove-orphans
+# 3. Check if SSL certificate is already present in docker volume
+# Inspect volume or check temporary container
+CERT_EXISTS=false
+if docker run --rm -v nginx-letsencrypt:/etc/letsencrypt alpine test -f /etc/letsencrypt/live/13-233-154-188.nip.io/fullchain.pem 2>/dev/null; then
+  CERT_EXISTS=true
+fi
 
-# 4. Wait for the HTTP health endpoint (max 30 s)
-echo "⏳ Waiting for HTTP health check …"
+if [ "$CERT_EXISTS" = true ]; then
+  echo "🔐 SSL certificate detected. Starting stack in HTTPS mode..."
+  NGINX_CONF=https.conf docker compose up -d --remove-orphans
+else
+  echo "🌐 Starting stack in HTTP mode for initial setup / challenge..."
+  NGINX_CONF=http.conf docker compose up -d --remove-orphans
+fi
+
+# 4. Wait for health check (follow redirects with -L for HTTPS)
+echo "⏳ Waiting for application health check …"
+HEALTHY=false
 for i in {1..30}; do
-  if curl -fs -H "Host: 13-233-154-188.nip.io" http://127.0.0.1/health >/dev/null 2>&1 || curl -fs http://127.0.0.1/health >/dev/null 2>&1; then
-    echo "✅ HTTP health check passed"
+  if curl -kfsL -H "Host: 13-233-154-188.nip.io" http://127.0.0.1/health >/dev/null 2>&1 || curl -kfsL http://127.0.0.1/health >/dev/null 2>&1; then
+    echo "✅ Health check passed"
+    HEALTHY=true
     break
   fi
   sleep 1
 done
 
-if ! curl -fs -H "Host: 13-233-154-188.nip.io" http://127.0.0.1/health >/dev/null 2>&1 && ! curl -fs http://127.0.0.1/health >/dev/null 2>&1; then
-  echo "❌ HTTP health check failed after timeout"
+if [ "$HEALTHY" != true ]; then
+  echo "❌ Health check failed after timeout"
   exit 1
 fi
 
-# 5. Certificate handling – do **not** run Certbot automatically.
-# If the certificate already exists, switch Nginx to HTTPS configuration.
-CERT_PATH="/etc/letsencrypt/live/13-233-154-188.nip.io/fullchain.pem"
-if docker compose exec nginx test -f "$CERT_PATH"; then
-  echo "🔐 Certificate already present – switching Nginx to HTTPS"
-  # Use the env var to select the HTTPS config and reload Nginx
-  docker compose down nginx
-  NGINX_CONF=https.conf docker compose up -d nginx
-  # Verify HTTPS health
-  echo "⏳ Verifying HTTPS health …"
-  if curl -kfs https://13-233-154-188.nip.io/health >/dev/null; then
-    echo "✅ HTTPS health check passed"
+# 5. Certificate handling
+if [ "$CERT_EXISTS" = true ]; then
+  # Verify HTTPS health specifically
+  echo "⏳ Verifying HTTPS endpoint health …"
+  if curl -kfsL https://13-233-154-188.nip.io/health >/dev/null 2>&1; then
+    echo "✅ HTTPS health check passed successfully"
     exit 0
   else
     echo "⚠️ HTTPS health check failed – inspect logs"
     exit 1
   fi
 else
-  echo "🔔 Certificate not found. After the HTTP health check passes, run the following manually to obtain the certificate:"
+  echo "🔔 SSL certificate not found. Run the following to obtain the certificate:"
   echo "    docker compose run --rm certbot"
-  echo "Then re‑run this script to switch to HTTPS."
+  echo "Then re-run this script to activate HTTPS."
 fi
