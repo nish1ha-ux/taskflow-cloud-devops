@@ -54,6 +54,8 @@ def test_home_returns_200(client):
     response = client.get("/")
     assert response.status_code == 200
     assert b'id="themeToggle"' in response.data
+    assert b'id="notificationBtn"' in response.data
+    assert b'id="settingsModal"' in response.data
     assert b"taskflow-theme" in response.data
 
 
@@ -64,6 +66,8 @@ def test_dashboard_returns_200(client):
     assert b"Welcome to Dashboard" in response.data
     assert b"Total Tasks" in response.data
     assert b'id="themeToggle"' in response.data
+    assert b'id="notificationBtn"' in response.data
+    assert b'id="settingsModal"' in response.data
     assert b"taskflow-theme" in response.data
 
 
