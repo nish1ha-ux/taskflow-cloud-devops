@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   # -------------------------------------------------
-  # 1️⃣ Flask application (no host‑published port)
+  # 1. Flask application
   # -------------------------------------------------
   app:
     image: ${APP_IMAGE:-ghcr.io/nish1ha-ux/taskflow:latest}
@@ -11,36 +11,43 @@ services:
     container_name: taskflow_app
     restart: unless-stopped
     environment:
-      - DATABASE_URL=postgresql://taskflow:taskflow@postgres:5432/taskflow
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-taskflow}:${POSTGRES_PASSWORD:-taskflow}@postgres:5432/${POSTGRES_DB:-taskflow}
     networks:
       - webnet
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   # -------------------------------------------------
-  # 2️⃣ PostgreSQL (preserve existing image & external volume)
+  # 2. PostgreSQL (portable volume & robust healthcheck)
   # -------------------------------------------------
   postgres:
     image: postgres:16
     container_name: taskflow_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: taskflow
-      POSTGRES_PASSWORD: taskflow
-      POSTGRES_DB: taskflow
+      POSTGRES_USER: ${POSTGRES_USER:-taskflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-taskflow}
+      POSTGRES_DB: ${POSTGRES_DB:-taskflow}
     volumes:
-      - taskflow-cloud-devops_postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U taskflow -d taskflow"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-taskflow} -d ${POSTGRES_DB:-taskflow}"]
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 10s
     networks:
       - webnet
 
   # -------------------------------------------------
-  # 3️⃣ Nginx reverse‑proxy (starts HTTP‑only)
+  # 3. Nginx reverse-proxy
   # -------------------------------------------------
   nginx:
     image: nginx:stable-alpine
@@ -59,7 +66,7 @@ services:
       - app
 
   # -------------------------------------------------
-  # 4️⃣ Certbot – one‑shot container (run manually after Nginx HTTP is up)
+  # 4. Certbot one-shot container
   # -------------------------------------------------
   certbot:
     image: certbot/certbot:latest
@@ -73,19 +80,17 @@ services:
       --register-unsafely-without-email
       -d 13-233-154-188.nip.io
     volumes:
-      - ./nginx/www:/var/www/certbot:rw   # Certbot writes challenge files
+      - ./nginx/www:/var/www/certbot:rw
       - nginx-letsencrypt:/etc/letsencrypt
     networks:
       - webnet
-    # Note: not started automatically – run with `docker compose run --rm certbot`
 
 networks:
   webnet:
     driver: bridge
 
 volumes:
-  taskflow-cloud-devops_postgres_data:
-    driver: local
+  postgres_data:
+    name: taskflow-cloud-devops_postgres_data
   nginx-letsencrypt:
     driver: local
-
