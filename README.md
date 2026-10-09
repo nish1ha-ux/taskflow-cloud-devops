@@ -98,110 +98,122 @@ continuous integration and image delivery using GitHub Actions.
 
 ## 📦 Deployment
 
-[![CI](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions/workflows/ci.yml/badge.svg)](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions)
+## 📦 Deployment & CI/CD Status
 
-### Deploy locally
+[![TaskFlow CI/CD](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions/workflows/ci.yml/badge.svg)](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions/workflows/ci.yml)
 
-
-1. **Edit the Certbot e‑mail**
-   Open `docker-compose.yml` and replace `--email __YOUR_EMAIL_HERE__` with your real e‑mail address in the `certbot` service.
-
-2. **Make the script executable**
-   ```bash
-   chmod +x scripts/deploy.sh
-   ```
-
-3. **Run the deployment script**
-   ```bash
-   ./scripts/deploy.sh
-   ```
-   The script will:
-   * Pull the latest code and rebuild the Flask image.
-   * Start the stack on ports **80** and **443** (initially HTTP‑only).
-   * Wait for the HTTP `/health` endpoint to become healthy.
-   * If a Let’s Encrypt certificate already exists, it will switch Nginx to the HTTPS configuration and verify the HTTPS health endpoint.
-   * If the certificate is missing, the script will **not** run Certbot automatically. Instead it prints the exact command you must run manually:
-   ```bash
-   docker compose run --rm certbot
-   ```
-   After running the above command, re‑run `./scripts/deploy.sh` to switch to HTTPS.
-
-## Notes
-
-* PostgreSQL data lives in the external Docker volume `taskflow-cloud-devops_postgres_data`; the deployment script never removes or recreates this volume.
-* Nginx selects its configuration via the environment variable `NGINX_CONF` (defaults to `default-http.conf`). The deploy script handles the switch to `default-https.conf` automatically when a certificate is present.
-* Flask now uses `werkzeug.middleware.proxy_fix.ProxyFix` to correctly interpret `X‑Forwarded‑For`, `X‑Forwarded‑Proto`, etc., so real client IPs are logged.
+### Production Endpoint
+- **Live URL**: [https://13-233-154-188.nip.io](https://13-233-154-188.nip.io)
+- **Health Check**: [https://13-233-154-188.nip.io/health](https://13-233-154-188.nip.io/health)
 
 ---
 
-## 🖥️ Local Development (without Docker)
+## 🔒 Why Immutable Commit-SHA Tags are Safer than `latest`
 
-You can run the test suite and linter on Windows **without Docker or PostgreSQL**.
+In production container delivery pipelines, tagging container images with the exact Git commit SHA (e.g. `ghcr.io/nish1ha-ux/taskflow:452f2721783df18e01c4363b0529ebbe91d3c4ef`) is substantially safer than relying on mutable tags such as `latest`:
 
-### 1. Create a virtual environment (PowerShell)
+1. **True Immutability & Determinism**:
+   The `latest` tag is a mutable pointer that gets overwritten on every pipeline build. If two deployments pull `latest` at different times, or if a cluster node has cached an older version of `latest`, different nodes may run completely different application binaries under the same tag name. Commit-SHA tags are immutable and uniquely bound to a single source commit.
 
-```powershell
-cd taskflow-cloud-devops
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-```
+2. **Reliable Rollbacks**:
+   If a production bug occurs, rolling back to a previous version using `latest` is impossible without rebuilding. With commit-SHA tags, rolling back is as simple as re-deploying the exact image tag of the last known healthy commit (e.g. `APP_IMAGE=ghcr.io/.../taskflow:0285019...`).
 
-### 2. Install dependencies
+3. **Complete Auditability & Traceability**:
+   Inspecting any running container immediately reveals its exact source code version, git commit history, and corresponding CI/CD test results.
 
-```powershell
-pip install -r app/requirements.txt
-pip install flake8 pytest
-```
+4. **Cache Invalidation Safety**:
+   Docker daemons frequently skip pulling `latest` if a local image tagged `latest` already exists unless explicitly forced. SHA-specific image tags eliminate ambiguous cache states.
 
-### 3. Run the tests
+---
 
-```powershell
-pytest -v
-```
+## ⚙️ CI/CD Pipeline Architecture & Evidence
 
-### 4. Run the linter
+The GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push and pull request to `main`:
 
-```powershell
-flake8 app
-```
+1. **Lint and Test**:
+   - Sets up Python 3.11 environment.
+   - Runs `flake8 app tests` for PEP 8 styling and line-length limits.
+   - Runs `pytest -q` executing all 21 unit, integration, and route validation tests.
+2. **Validate Compose**:
+   - `needs: lint-and-test` — blocks downstream stages if lint or tests fail.
+   - Runs `docker compose config --quiet` to validate syntax and volume mapping.
+3. **Build and Push Docker Image**:
+   - `needs: compose-check`
+   - Authenticates to GitHub Container Registry (`ghcr.io`) using `GITHUB_TOKEN` with `packages: write` permissions.
+   - Builds container image with multi-stage Buildx caching.
+   - Pushes both `latest` and full Git commit SHA (`${{ github.sha }}`) tags.
+4. **Deploy to EC2**:
+   - `needs: build-and-push`
+   - Secure SSH deployment to AWS EC2 instance.
+   - Executes idempotent `deploy.sh` script, restarts containers with zero-downtime, and verifies `/health` endpoint over HTTPS.
 
-### 5. Run the application locally (requires PostgreSQL)
+### Genuine GitHub Actions Run Evidence
 
-```powershell
-$env:DATABASE_URL = "postgresql://taskflow:taskflow@localhost:5432/taskflow"
-python app/app.py
-```
-
-The app starts on `http://localhost:8000`. A running PostgreSQL server is
-required for routes that access the database.
+- **Successful Runs (Passed Validation & Deployed)**:
+  - [Run #35 (Commit `452f272`)](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions/runs/37999730252) — CI/CD Pipeline Success (Lint, Test, Compose, Image Push, EC2 Deploy).
+  - [Run #34 (Commit `0285019`)](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions/runs/37999024708) — System Overview Page Deployment.
+  - [Run #33 (Commit `d0452c7`)](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions/runs/37997517600) — UI Polish & Task Editing Deployment.
+- **Failed Runs (Captured CI Failure & Blocked Deployment)**:
+  - [Run #25 (Commit `62ded92`)](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions/runs/37990164837) — SSH Host Authentication Failure.
+  - [Run #24 (Commit `8de3913`)](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions/runs/37990006504) — Host Key Verification Failure.
+  - [Run #22 (Commit `6194d6d`)](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions/runs/37989319728) — Docker Login Permission Failure.
 
 ---
 
 ## 🌐 Application Routes
 
-| Method | Path      | Description                      | Requires DB |
-|--------|-----------|----------------------------------|-------------|
-| GET    | `/`       | Web UI (renders `index.html`)    | No          |
-| GET    | `/health` | Health check (probes database)   | Yes         |
-| GET    | `/tasks`  | List all tasks as JSON           | Yes         |
-| POST   | `/tasks`  | Create a task (`{"title": "…"}`) | Yes         |
+| Method | Path                | Description                                       | Requires DB |
+|--------|---------------------|---------------------------------------------------|-------------|
+| GET    | `/`                 | Main Tasks view (create, list, edit, filter)      | No (UI)     |
+| GET    | `/dashboard`        | Dashboard metrics, analytics & recent tasks table | No (UI)     |
+| GET    | `/settings`         | Workspace preferences & appearance settings       | No (UI)     |
+| GET    | `/system-overview`  | Cloud & DevOps platform architecture & health     | No (UI)     |
+| GET    | `/health`           | Health check (probes PostgreSQL connectivity)     | Yes         |
+| GET    | `/tasks`            | List all tasks as JSON                            | Yes         |
+| POST   | `/tasks`            | Create task (title, description, deadline)        | Yes         |
+| PUT    | `/tasks/<id>`       | Update task details (title, desc, deadline)       | Yes         |
+| DELETE | `/tasks/<id>`       | Delete task by ID                                 | Yes         |
 
 ### Environment Variables
 
-| Variable       | Required | Description                          |
-|----------------|----------|--------------------------------------|
-| `DATABASE_URL` | Yes      | PostgreSQL connection string         |
-| `NGINX_CONF`   | No       | Nginx config file (default: `http.conf` or `https.conf`) |
+| Variable       | Required | Description                                               |
+|----------------|----------|-----------------------------------------------------------|
+| `DATABASE_URL` | Yes      | PostgreSQL connection string (`postgresql://...`)         |
+| `NGINX_CONF`   | No       | Nginx config file (`http.conf` or `https.conf`)           |
+| `APP_IMAGE`    | No       | Specific container image tag to run (used in CD pipeline) |
 
 ---
 
-## ⚙️ CI/CD Pipeline
+## 🖥️ Local Development (without Docker)
 
-The GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push and pull request to `main`:
+You can run the test suite and linter on Windows or Linux without Docker or PostgreSQL:
 
-1. **Lint and Test** — installs dependencies, runs `flake8 app` and `pytest -q`.
-2. **Validate Compose** — validates `docker-compose.yml` syntax.
-3. **Build and Push Docker Image** — builds and pushes the Docker image to GHCR with dual tags (`latest` and immutable commit SHA).
-4. **Deploy to EC2** — automated CD over SSH to the AWS EC2 instance, deploying the latest container image, verifying database volume persistence, and activating HTTPS with Let's Encrypt certificates.
+### 1. Install dependencies
+
+```bash
+pip install -r app/requirements.txt
+pip install flake8 pytest
+```
+
+### 2. Run the test suite
+
+```bash
+pytest -v
+```
+
+### 3. Run the linter
+
+```bash
+flake8 app tests
+```
 
 ---
+
+## 🛡️ Track A Verification & Security Standards
+
+- **Ports**: Only **80** (HTTP) and **443** (HTTPS) exposed to public Internet. Database (`5432`) and Flask app (`8000`) are isolated in the internal Docker bridge network `taskflow_net`.
+- **TLS / HTTPS**: Let's Encrypt automated certificate issued for `13-233-154-188.nip.io`.
+- **HTTP Redirect**: Nginx automatically redirects all port 80 traffic to HTTPS with `301 Moved Permanently`.
+- **Reverse Proxy Headers**: `X-Forwarded-For`, `X-Forwarded-Proto`, and `Host` headers configured; Werkzeug `ProxyFix` active in Flask app for real client IP logging.
+- **Idempotency**: `scripts/deploy.sh` safely handles state transitions, restarts containers with `--force-recreate`, and checks health before exiting.
+
