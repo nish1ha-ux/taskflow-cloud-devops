@@ -14,23 +14,29 @@ git fetch --all
 git checkout main
 git pull origin main
 
-# 2. Build (only rebuild if Dockerfile changed)
+# Stop host-level nginx if active so containerized Nginx can bind port 80/443
+if command -v systemctl >/dev/null 2>&1; then
+  sudo systemctl stop nginx 2>/dev/null || true
+  sudo systemctl disable nginx 2>/dev/null || true
+fi
+
+# 2. Build or pull images
 docker compose build app
 
 # 3. Bring up the stack (keep existing volumes, do not delete data)
 docker compose up -d --remove-orphans
 
-# 4. Wait for the HTTP health endpoint (max 30 s)
+# 4. Wait for the HTTP health endpoint (max 30 s)
 echo "⏳ Waiting for HTTP health check …"
 for i in {1..30}; do
-  if curl -fs http://127.0.0.1/health >/dev/null; then
+  if curl -fs -H "Host: 13-233-154-188.nip.io" http://127.0.0.1/health >/dev/null 2>&1 || curl -fs http://127.0.0.1/health >/dev/null 2>&1; then
     echo "✅ HTTP health check passed"
     break
   fi
   sleep 1
 done
 
-if ! curl -fs http://127.0.0.1/health >/dev/null; then
+if ! curl -fs -H "Host: 13-233-154-188.nip.io" http://127.0.0.1/health >/dev/null 2>&1 && ! curl -fs http://127.0.0.1/health >/dev/null 2>&1; then
   echo "❌ HTTP health check failed after timeout"
   exit 1
 fi
@@ -42,7 +48,7 @@ if docker compose exec nginx test -f "$CERT_PATH"; then
   echo "🔐 Certificate already present – switching Nginx to HTTPS"
   # Use the env var to select the HTTPS config and reload Nginx
   docker compose down nginx
-  NGINX_CONF=default-https.conf docker compose up -d nginx
+  NGINX_CONF=https.conf docker compose up -d nginx
   # Verify HTTPS health
   echo "⏳ Verifying HTTPS health …"
   if curl -kfs https://13-233-154-188.nip.io/health >/dev/null; then
