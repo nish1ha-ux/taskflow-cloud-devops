@@ -46,6 +46,11 @@ def dashboard():
     return render_template("dashboard.html")
 
 
+@app.route("/settings")
+def settings():
+    return render_template("settings.html")
+
+
 @app.route("/health")
 def health():
     """Health check that verifies the database is reachable."""

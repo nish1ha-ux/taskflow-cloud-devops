@@ -71,6 +71,22 @@ def test_dashboard_returns_200(client):
     assert b"taskflow-theme" in response.data
 
 
+def test_settings_returns_200(client):
+    """GET /settings renders the settings template and returns 200."""
+    response = client.get("/settings")
+    assert response.status_code == 200
+    assert b"Settings" in response.data
+    assert b'id="appearanceSection"' in response.data
+    assert b'id="accountSection"' in response.data
+    assert b'id="notificationsSection"' in response.data
+    assert b'id="appPreferencesSection"' in response.data
+    assert b'id="aboutSection"' in response.data
+    assert b'id="themeToggle"' in response.data
+    assert b'id="notificationBtn"' in response.data
+    assert b"taskflow-theme" in response.data
+    assert b"taskflow-workspace-name" in response.data
+
+
 # ── Task creation validation ────────────────────────────────────
 
 
