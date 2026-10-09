@@ -46,13 +46,21 @@ def test_health_db_unreachable(client):
     assert data["database"] == "unreachable"
 
 
-# ── Home page ────────────────────────────────────────────────────
+# ── Home & Dashboard pages ───────────────────────────────────────
 
 
 def test_home_returns_200(client):
     """GET / renders the index template and returns 200."""
     response = client.get("/")
     assert response.status_code == 200
+
+
+def test_dashboard_returns_200(client):
+    """GET /dashboard renders the dashboard template and returns 200."""
+    response = client.get("/dashboard")
+    assert response.status_code == 200
+    assert b"Welcome to Dashboard" in response.data
+    assert b"Total Tasks" in response.data
 
 
 # ── Task creation validation ────────────────────────────────────
