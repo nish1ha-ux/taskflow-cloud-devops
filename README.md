@@ -195,14 +195,13 @@ required for routes that access the database.
 
 ---
 
-## ⚙️ CI Pipeline
+## ⚙️ CI/CD Pipeline
 
-The GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push
-and pull request to `main`:
+The GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push and pull request to `main`:
 
-1. **lint** — installs dependencies, runs `flake8 app` and `pytest -q`.
-2. **compose_check** — validates `docker-compose.yml` syntax.
-3. **build_and_push** — builds and pushes the Docker image to GHCR
-   (**only on push to `main`**, never on pull requests).
+1. **Lint and Test** — installs dependencies, runs `flake8 app` and `pytest -q`.
+2. **Validate Compose** — validates `docker-compose.yml` syntax.
+3. **Build and Push Docker Image** — builds and pushes the Docker image to GHCR with dual tags (`latest` and immutable commit SHA).
+4. **Deploy to EC2** — automated CD over SSH to the AWS EC2 instance, deploying the latest container image, verifying database volume persistence, and activating HTTPS with Let's Encrypt certificates.
 
 ---
