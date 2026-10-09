@@ -39,10 +39,10 @@ fi
 
 if [ "$CERT_EXISTS" = true ]; then
   echo "🔐 SSL certificate detected. Starting stack in HTTPS mode..."
-  NGINX_CONF=https.conf docker compose up -d --remove-orphans
+  NGINX_CONF=https.conf docker compose up -d --force-recreate --remove-orphans
 else
   echo "🌐 Starting stack in HTTP mode for initial setup / challenge..."
-  NGINX_CONF=http.conf docker compose up -d --remove-orphans
+  NGINX_CONF=http.conf docker compose up -d --force-recreate --remove-orphans
 fi
 
 # 4. Wait for health check (follow redirects with -L for HTTPS)
