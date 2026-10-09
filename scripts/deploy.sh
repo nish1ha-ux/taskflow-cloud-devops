@@ -33,7 +33,7 @@ fi
 
 # 3. Check if SSL certificate is already present in docker volume
 CERT_EXISTS=false
-if docker run --rm -v taskflow-cloud-devops_nginx-letsencrypt:/etc/letsencrypt alpine test -f /etc/letsencrypt/live/13-233-154-188.nip.io/fullchain.pem 2>/dev/null; then
+if docker compose run --rm --no-deps --entrypoint "test -f /etc/letsencrypt/live/13-233-154-188.nip.io/fullchain.pem" certbot >/dev/null 2>&1; then
   CERT_EXISTS=true
 fi
 
