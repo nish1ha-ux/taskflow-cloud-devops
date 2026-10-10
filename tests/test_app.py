@@ -367,26 +367,195 @@ def test_delete_task_not_found(client):
 
 
 def test_init_db():
-    """init_db creates tasks table and migrates columns if needed."""
+    """init_db creates tasks and profile tables and seeds default profile."""
     from app.app import init_db
 
     mock_conn = MagicMock()
     mock_cur = MagicMock()
     mock_conn.cursor.return_value = mock_cur
+    mock_cur.fetchone.return_value = None  # trigger seeding
 
     with patch("app.app.get_db_connection", return_value=mock_conn):
         init_db()
 
-    assert mock_cur.execute.call_count == 2
-    create_call = mock_cur.execute.call_args_list[0][0][0]
-    alter_call = mock_cur.execute.call_args_list[1][0][0]
-    assert "CREATE TABLE IF NOT EXISTS tasks" in create_call
+    assert mock_cur.execute.call_count == 5
+    create_tasks = mock_cur.execute.call_args_list[0][0][0]
+    alter_tasks = mock_cur.execute.call_args_list[1][0][0]
+    create_profile = mock_cur.execute.call_args_list[2][0][0]
+    select_profile = mock_cur.execute.call_args_list[3][0][0]
+    insert_profile = mock_cur.execute.call_args_list[4][0][0]
+
+    assert "CREATE TABLE IF NOT EXISTS tasks" in create_tasks
     assert "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS description" in (
-        alter_call
+        alter_tasks
     )
-    assert "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS deadline" in (
-        alter_call
-    )
+    assert "CREATE TABLE IF NOT EXISTS profile" in create_profile
+    assert "SELECT id FROM profile WHERE id = 1" in select_profile
+    assert "INSERT INTO profile" in insert_profile
     mock_conn.commit.assert_called_once()
     mock_cur.close.assert_called_once()
     mock_conn.close.assert_called_once()
+
+
+# ── Profile endpoints ────────────────────────────────────────────
+
+
+def test_get_profile_existing(client):
+    """GET /profile returns 200 with formatted profile and initials."""
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value = mock_cur
+    mock_cur.fetchone.return_value = (
+        1,
+        "Alex Morgan",
+        "Alex",
+        "alex@example.com",
+        "#6d8cff",
+        "Engineering Workspace",
+        "Production task workspace",
+        "Workspace Administrator",
+        "UTC (UTC+00:00)",
+    )
+
+    with patch("app.app.get_db_connection", return_value=mock_conn):
+        response = client.get("/profile")
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["full_name"] == "Alex Morgan"
+    assert data["display_name"] == "Alex"
+    assert data["email"] == "alex@example.com"
+    assert data["workspace_name"] == "Engineering Workspace"
+    assert data["role"] == "Workspace Administrator"
+    assert data["initials"] == "AM"
+
+
+def test_get_profile_auto_seed(client):
+    """GET /profile auto-seeds default row if table is empty."""
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value = mock_cur
+    # First fetchone returns None (table empty), second returns seeded tuple
+    mock_cur.fetchone.side_effect = [
+        None,
+        (
+            1,
+            "TaskFlow User",
+            "User",
+            "",
+            "#6d8cff",
+            "Default Workspace",
+            "Production task and cloud DevOps workspace",
+            "Workspace Administrator",
+            "UTC (UTC+00:00)",
+        ),
+    ]
+
+    with patch("app.app.get_db_connection", return_value=mock_conn):
+        response = client.get("/profile")
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["display_name"] == "User"
+    assert data["initials"] == "TU"
+
+
+def test_update_profile_success(client):
+    """PUT /profile updates profile fields in database and returns 200."""
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value = mock_cur
+    mock_cur.fetchone.return_value = (
+        1,
+        "Alex Morgan",
+        "Alex",
+        "alex@example.com",
+        "#55d6a4",
+        "Engineering Core",
+        "Cloud Operations",
+        "DevOps Lead",
+        "America/New_York (UTC-04:00)",
+    )
+
+    payload = {
+        "full_name": "Alex Morgan",
+        "display_name": "Alex",
+        "email": "alex@example.com",
+        "avatar_color": "#55d6a4",
+        "workspace_name": "Engineering Core",
+        "workspace_description": "Cloud Operations",
+        "role": "DevOps Lead",
+        "timezone": "America/New_York (UTC-04:00)",
+    }
+
+    with patch("app.app.get_db_connection", return_value=mock_conn):
+        response = client.put("/profile", json=payload)
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["full_name"] == "Alex Morgan"
+    assert data["display_name"] == "Alex"
+    assert data["workspace_name"] == "Engineering Core"
+    assert data["initials"] == "AM"
+    assert "Profile updated successfully" in data["message"]
+
+
+def test_update_profile_validation(client):
+    """PUT /profile validates that required fields are present."""
+    # Empty body
+    res1 = client.put("/profile", json={})
+    assert res1.status_code == 400
+    assert "Full name is required" in res1.get_json()["error"]
+
+    # Missing display_name
+    res2 = client.put("/profile", json={"full_name": "Alice Smith"})
+    assert res2.status_code == 400
+    assert "Display name is required" in res2.get_json()["error"]
+
+    # Missing workspace_name
+    res3 = client.put("/profile", json={
+        "full_name": "Alice Smith",
+        "display_name": "Alice",
+        "workspace_name": "   ",
+    })
+    assert res3.status_code == 400
+    assert "Workspace name is required" in res3.get_json()["error"]
+
+
+def test_reset_profile_success(client):
+    """POST /profile/reset restores default profile values and returns 200."""
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value = mock_cur
+    mock_cur.fetchone.return_value = (
+        1,
+        "TaskFlow User",
+        "User",
+        "",
+        "#6d8cff",
+        "Default Workspace",
+        "Production task and cloud DevOps workspace",
+        "Workspace Administrator",
+        "UTC (UTC+00:00)",
+    )
+
+    with patch("app.app.get_db_connection", return_value=mock_conn):
+        response = client.post("/profile/reset")
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["full_name"] == "TaskFlow User"
+    assert data["display_name"] == "User"
+    assert data["workspace_name"] == "Default Workspace"
+    assert data["initials"] == "TU"
+    assert "Profile reset to default successfully" in data["message"]
+    mock_conn.commit.assert_called_once()
+
+
+def test_compute_initials():
+    """compute_initials extracts first letters cleanly."""
+    from app.app import compute_initials
+    assert compute_initials("Jane Doe", "Jane") == "JD"
+    assert compute_initials("Alice", "Alice") == "AL"
+    assert compute_initials("", "Bob") == "BO"
+    assert compute_initials("", "") == "TF"

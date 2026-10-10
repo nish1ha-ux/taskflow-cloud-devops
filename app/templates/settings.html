@@ -699,13 +699,13 @@
             </a>
         </nav>
         <div class="sidebar-bottom">
-            <div class="workspace">
-                <span class="avatar">NS</span>
-                <div>
-                    <strong id="sidebarWorkspaceName">Nishtha&apos;s space</strong>
-                    <small>Production workspace</small>
+            <a href="#accountSection" class="workspace" id="sidebarProfileTrigger" title="Account & Workspace Profile" style="cursor: pointer; text-decoration: none;">
+                <span class="avatar" id="sidebarAvatar">TU</span>
+                <div style="min-width: 0; flex: 1;">
+                    <strong id="sidebarWorkspaceName" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Default Workspace</strong>
+                    <small id="sidebarUserRole" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Workspace Administrator</small>
                 </div>
-            </div>
+            </a>
         </div>
     </aside>
 
@@ -731,6 +731,11 @@
                     <span class="notif-badge" id="notifBadge"></span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/></svg>
                 </button>
+
+                <!-- Profile Shortcut in Header -->
+                <a href="#accountSection" class="icon-button" id="headerProfileBtn" aria-label="Account & Workspace Profile" title="Account & Workspace Profile" style="display:flex; align-items:center; justify-content:center; text-decoration:none;">
+                    <span class="avatar user-avatar" id="headerAvatar" style="width:24px; height:24px; font-size:11px; font-weight:700; border-radius:50%; background:var(--blue); color:white; display:grid; place-items:center;">NB</span>
+                </a>
 
                 <!-- Notification Dropdown -->
                 <div class="notif-dropdown" id="notifDropdown" role="region" aria-label="Notification list">
@@ -814,26 +819,101 @@
                     </div>
                     <div>
                         <h2 class="section-title">Account & Workspace Profile</h2>
-                        <p class="section-subtitle">Manage your local workspace identity and active deployment context.</p>
+                        <p class="section-subtitle">Personalize your user profile and organization workspace preferences.</p>
                     </div>
                 </div>
 
-                <div class="setting-row">
-                    <div class="setting-label-block">
-                        <div class="setting-title">Workspace Name</div>
-                        <div class="setting-desc">The primary display title of your local organization workspace.</div>
-                    </div>
-                    <input type="text" class="setting-input" id="workspaceNameInput" value="Nishtha's space" placeholder="Enter workspace name">
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-label-block">
-                        <div class="setting-title">Active Role & Access</div>
-                        <div class="setting-desc">Your permissions level in this TaskFlow deployment.</div>
-                    </div>
+                <div class="profile-avatar-banner" style="display:flex; align-items:center; gap:16px; padding:16px; background:var(--row-bg); border-radius:12px; margin-bottom:18px; border:1px solid var(--row-border);">
+                    <div class="avatar" id="profileAvatarBadge" style="width:52px; height:52px; font-size:18px; font-weight:700; border-radius:12px; display:grid; place-items:center; background:var(--blue); color:white; box-shadow:0 6px 16px rgba(109,140,255,0.25);">TU</div>
                     <div>
-                        <span class="badge badge-live">Workspace Administrator (Owner)</span>
+                        <div style="font-size:15px; font-weight:700; color:var(--text);" id="profilePreviewName">TaskFlow User</div>
+                        <div style="font-size:12px; color:var(--muted); margin-top:2px;" id="profilePreviewDetails">Default Workspace • Workspace Administrator</div>
                     </div>
+                </div>
+
+                <div style="margin-bottom: 14px;">
+                    <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--blue); margin-bottom: 8px;">👤 Account Profile</h3>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label-block">
+                        <div class="setting-title">Full Name <span style="color:var(--danger);">*</span></div>
+                        <div class="setting-desc">Your official name used across workspace activity.</div>
+                    </div>
+                    <input type="text" class="setting-input" id="profileFullName" value="TaskFlow User" placeholder="e.g. Alex Morgan" required>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label-block">
+                        <div class="setting-title">Display Name <span style="color:var(--danger);">*</span></div>
+                        <div class="setting-desc">Greeting and header display name shown across the app.</div>
+                    </div>
+                    <input type="text" class="setting-input" id="profileDisplayName" value="User" placeholder="e.g. Alex" required>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label-block">
+                        <div class="setting-title">Email Address <span style="font-size:11px; color:var(--muted); font-weight:normal;">(Optional)</span></div>
+                        <div class="setting-desc">Contact email address for workspace records.</div>
+                    </div>
+                    <input type="email" class="setting-input" id="profileEmail" value="" placeholder="e.g. alex@example.com">
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label-block">
+                        <div class="setting-title">Avatar Accent Color</div>
+                        <div class="setting-desc">Customize your profile initials avatar accent color.</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <input type="color" id="profileAvatarColor" value="#6d8cff" style="width:38px; height:36px; padding:2px; border-radius:8px; border:1px solid var(--input-border); background:var(--input-bg); cursor:pointer;">
+                        <span id="avatarColorHex" style="font-size:12px; color:var(--muted); font-family:monospace;">#6d8cff</span>
+                    </div>
+                </div>
+
+                <div style="margin: 24px 0 14px;">
+                    <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--purple); margin-bottom: 8px;">🏢 Workspace Profile</h3>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label-block">
+                        <div class="setting-title">Workspace Name <span style="color:var(--danger);">*</span></div>
+                        <div class="setting-desc">The primary organization workspace title shown in the sidebar.</div>
+                    </div>
+                    <input type="text" class="setting-input" id="workspaceNameInput" value="Default Workspace" placeholder="e.g. Engineering Workspace" required>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label-block">
+                        <div class="setting-title">Workspace Description <span style="font-size:11px; color:var(--muted); font-weight:normal;">(Optional)</span></div>
+                        <div class="setting-desc">A short overview or purpose of this workspace environment.</div>
+                    </div>
+                    <input type="text" class="setting-input" id="workspaceDescInput" value="Production task and cloud DevOps workspace" placeholder="e.g. Cloud infrastructure and DevOps workspace">
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label-block">
+                        <div class="setting-title">Role / Designation <span style="font-size:11px; color:var(--muted); font-weight:normal;">(Optional)</span></div>
+                        <div class="setting-desc">Your functional title or permission role within this workspace.</div>
+                    </div>
+                    <input type="text" class="setting-input" id="workspaceRoleInput" value="Workspace Administrator" placeholder="e.g. Workspace Administrator">
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label-block">
+                        <div class="setting-title">Preferred Timezone <span style="font-size:11px; color:var(--muted); font-weight:normal;">(Optional)</span></div>
+                        <div class="setting-desc">Timezone for task deadlines and schedules.</div>
+                    </div>
+                    <select class="setting-select" id="workspaceTimezoneSelect">
+                        <option value="Asia/Kolkata (UTC+05:30)">Asia/Kolkata (UTC+05:30)</option>
+                        <option value="UTC (UTC+00:00)">UTC (UTC+00:00)</option>
+                        <option value="America/New_York (UTC-04:00)">America/New_York (UTC-04:00)</option>
+                        <option value="America/Los_Angeles (UTC-07:00)">America/Los_Angeles (UTC-07:00)</option>
+                        <option value="Europe/London (UTC+01:00)">Europe/London (UTC+01:00)</option>
+                        <option value="Europe/Berlin (UTC+02:00)">Europe/Berlin (UTC+02:00)</option>
+                        <option value="Asia/Tokyo (UTC+09:00)">Asia/Tokyo (UTC+09:00)</option>
+                        <option value="Asia/Singapore (UTC+08:00)">Asia/Singapore (UTC+08:00)</option>
+                        <option value="Australia/Sydney (UTC+10:00)">Australia/Sydney (UTC+10:00)</option>
+                    </select>
                 </div>
 
                 <div class="setting-row">
@@ -846,9 +926,15 @@
                     </div>
                 </div>
 
-                <div class="btn-group">
-                    <button type="button" class="primary-btn" id="saveProfileBtn">Save Profile</button>
-                    <button type="button" class="secondary-btn" id="resetProfileBtn">Reset</button>
+                <div class="btn-group" style="margin-top: 24px;">
+                    <button type="button" class="primary-btn" id="saveProfileBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px; height:16px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        <span>Save Profile</span>
+                    </button>
+                    <button type="button" class="secondary-btn" id="resetProfileBtn" style="color:var(--danger); border-color:rgba(255,127,148,0.35);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px; height:15px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        <span>Reset Profile</span>
+                    </button>
                 </div>
             </section>
 
@@ -978,7 +1064,7 @@
                 <div class="setting-row">
                     <div class="setting-label-block">
                         <div class="setting-title">Clear Local Workspace Cache</div>
-                        <div class="setting-desc">Reset all stored client preferences, layout settings, and cached state.</div>
+                        <div class="setting-desc">Reset stored client preferences, layout settings, and cached state.</div>
                     </div>
                     <button type="button" class="danger-btn" id="clearCacheBtn">Clear Cache</button>
                 </div>
@@ -1000,6 +1086,18 @@
 
 <script>
     const $ = (id) => document.getElementById(id);
+
+    let activeProfile = {
+        full_name: "TaskFlow User",
+        display_name: "User",
+        email: "",
+        avatar_color: "#6d8cff",
+        workspace_name: "Default Workspace",
+        workspace_description: "Production task and cloud DevOps workspace",
+        role: "Workspace Administrator",
+        timezone: "UTC (UTC+00:00)",
+        initials: "TU"
+    };
 
     function showToast(msg) {
         const toast = $('toast');
@@ -1070,15 +1168,141 @@
         });
     }
 
-    function loadSavedSettings() {
-        // Workspace name
-        const savedWs = localStorage.getItem('taskflow-workspace-name');
-        if (savedWs) {
-            $('workspaceNameInput').value = savedWs;
-            $('sidebarWorkspaceName').textContent = savedWs;
+    function syncProfileUI(profile) {
+        if (!profile) return;
+        activeProfile = Object.assign({}, activeProfile, profile);
+
+        const initials = profile.initials || (profile.display_name ? profile.display_name.slice(0, 2).toUpperCase() : "TF");
+        const wsName = profile.workspace_name || "Default Workspace";
+        const dispName = profile.display_name || "User";
+        const fullName = profile.full_name || dispName;
+        const role = profile.role || "Workspace Administrator";
+        const color = profile.avatar_color || "#6d8cff";
+
+        // Sidebar and Header avatars
+        ['sidebarAvatar', 'profileAvatarBadge', 'headerAvatar'].forEach(id => {
+            const el = $(id);
+            if (el) {
+                el.textContent = initials;
+                el.style.backgroundColor = color;
+            }
+        });
+
+        if ($('sidebarWorkspaceName')) $('sidebarWorkspaceName').textContent = wsName;
+        if ($('sidebarUserRole')) $('sidebarUserRole').textContent = role;
+        if ($('profilePreviewName')) $('profilePreviewName').textContent = fullName;
+        if ($('profilePreviewDetails')) $('profilePreviewDetails').textContent = `${wsName} • ${role}`;
+
+        // Inputs
+        if ($('profileFullName')) $('profileFullName').value = fullName;
+        if ($('profileDisplayName')) $('profileDisplayName').value = dispName;
+        if ($('profileEmail')) $('profileEmail').value = profile.email || '';
+        if ($('profileAvatarColor')) $('profileAvatarColor').value = color;
+        if ($('avatarColorHex')) $('avatarColorHex').textContent = color;
+        if ($('workspaceNameInput')) $('workspaceNameInput').value = wsName;
+        if ($('workspaceDescInput')) $('workspaceDescInput').value = profile.workspace_description || '';
+        if ($('workspaceRoleInput')) $('workspaceRoleInput').value = role;
+        if ($('workspaceTimezoneSelect') && profile.timezone) $('workspaceTimezoneSelect').value = profile.timezone;
+
+        // Local cache
+        try {
+            localStorage.setItem('taskflow-workspace-name', wsName);
+            localStorage.setItem('taskflow-profile-cache', JSON.stringify(activeProfile));
+        } catch (e) {}
+    }
+
+    async function fetchProfile() {
+        // Hydrate from localStorage first
+        try {
+            const cached = localStorage.getItem('taskflow-profile-cache');
+            if (cached) syncProfileUI(JSON.parse(cached));
+        } catch (e) {}
+
+        try {
+            const res = await fetch('/profile');
+            if (res.ok) {
+                const data = await res.json();
+                syncProfileUI(data);
+            }
+        } catch (err) {
+            console.error('Error fetching profile:', err);
+        }
+    }
+
+    async function handleSaveProfile() {
+        const fullName = ($('profileFullName').value || '').trim();
+        const dispName = ($('profileDisplayName').value || '').trim();
+        const wsName = ($('workspaceNameInput').value || '').trim();
+
+        if (!fullName) {
+            showToast('Full Name is required');
+            $('profileFullName').focus();
+            return;
+        }
+        if (!dispName) {
+            showToast('Display Name is required');
+            $('profileDisplayName').focus();
+            return;
+        }
+        if (!wsName) {
+            showToast('Workspace Name is required');
+            $('workspaceNameInput').focus();
+            return;
         }
 
-        // Checkboxes & Preferences
+        const payload = {
+            full_name: fullName,
+            display_name: dispName,
+            email: ($('profileEmail').value || '').trim(),
+            avatar_color: $('profileAvatarColor').value || '#6d8cff',
+            workspace_name: wsName,
+            workspace_description: ($('workspaceDescInput').value || '').trim(),
+            role: ($('workspaceRoleInput').value || '').trim(),
+            timezone: $('workspaceTimezoneSelect').value
+        };
+
+        try {
+            const res = await fetch('/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                syncProfileUI(data);
+                showToast('Account & Workspace profile saved successfully! ✨');
+            } else {
+                showToast(data.error || 'Failed to save profile');
+            }
+        } catch (err) {
+            showToast('Network error saving profile');
+        }
+    }
+
+    async function handleResetProfile() {
+        if (!confirm('Are you sure you want to reset your account and workspace profile to default values?\n\n(Your tasks and other settings will remain untouched)')) {
+            return;
+        }
+
+        try {
+            const res = await fetch('/profile/reset', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await res.json();
+            if (res.ok) {
+                syncProfileUI(data);
+                showToast('Profile reset to default values ✨');
+            } else {
+                showToast(data.error || 'Failed to reset profile');
+            }
+        } catch (err) {
+            showToast('Network error resetting profile');
+        }
+    }
+
+    function loadSavedSettings() {
+        // Load preferences
         const prefsJson = localStorage.getItem('taskflow-app-prefs');
         if (prefsJson) {
             try {
@@ -1097,10 +1321,6 @@
     }
 
     function saveAllPreferences() {
-        const wsName = $('workspaceNameInput').value.trim() || "Nishtha's space";
-        localStorage.setItem('taskflow-workspace-name', wsName);
-        $('sidebarWorkspaceName').textContent = wsName;
-
         const prefs = {
             reduceMotion: $('reduceMotionToggle').checked,
             taskAlerts: $('taskAlertsToggle').checked,
@@ -1112,24 +1332,34 @@
         };
 
         localStorage.setItem('taskflow-app-prefs', JSON.stringify(prefs));
-        showToast('All preferences saved successfully!');
+        handleSaveProfile();
     }
 
     function setupEventListeners() {
         // Save profile
-        $('saveProfileBtn').addEventListener('click', () => {
-            const wsName = $('workspaceNameInput').value.trim() || "Nishtha's space";
-            localStorage.setItem('taskflow-workspace-name', wsName);
-            $('sidebarWorkspaceName').textContent = wsName;
-            showToast('Workspace profile saved!');
-        });
+        $('saveProfileBtn').addEventListener('click', handleSaveProfile);
 
         // Reset profile
-        $('resetProfileBtn').addEventListener('click', () => {
-            $('workspaceNameInput').value = "Nishtha's space";
-            localStorage.removeItem('taskflow-workspace-name');
-            $('sidebarWorkspaceName').textContent = "Nishtha's space";
-            showToast('Workspace profile reset to default');
+        $('resetProfileBtn').addEventListener('click', handleResetProfile);
+
+        // Realtime color change preview
+        $('profileAvatarColor').addEventListener('input', (e) => {
+            const color = e.target.value;
+            if ($('avatarColorHex')) $('avatarColorHex').textContent = color;
+            if ($('profileAvatarBadge')) $('profileAvatarBadge').style.backgroundColor = color;
+            if ($('sidebarAvatar')) $('sidebarAvatar').style.backgroundColor = color;
+            if ($('headerAvatar')) $('headerAvatar').style.backgroundColor = color;
+        });
+
+        // Realtime name input preview
+        $('profileFullName').addEventListener('input', (e) => {
+            const name = e.target.value.trim() || 'TaskFlow User';
+            if ($('profilePreviewName')) $('profilePreviewName').textContent = name;
+            const parts = name.split(' ');
+            let inits = 'TF';
+            if (parts.length >= 2) inits = (parts[0][0] + parts[1][0]).toUpperCase();
+            else if (parts.length === 1 && parts[0].length >= 2) inits = parts[0].slice(0, 2).toUpperCase();
+            if ($('profileAvatarBadge')) $('profileAvatarBadge').textContent = inits;
         });
 
         // Save all prefs button
@@ -1152,8 +1382,10 @@
         $('clearCacheBtn').addEventListener('click', () => {
             if (confirm('Are you sure you want to clear all stored client preferences and reset to default?')) {
                 localStorage.removeItem('taskflow-workspace-name');
+                localStorage.removeItem('taskflow-profile-cache');
                 localStorage.removeItem('taskflow-app-prefs');
                 loadSavedSettings();
+                fetchProfile();
                 showToast('Local workspace cache cleared');
             }
         });
@@ -1193,6 +1425,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         setupThemeControls();
         setupNotifications();
+        fetchProfile();
         loadSavedSettings();
         setupEventListeners();
         setupMobileDrawer();

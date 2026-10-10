@@ -773,11 +773,11 @@
             </a>
         </nav>
         <div class="sidebar-bottom">
-            <div class="workspace">
-                <span class="avatar">NS</span>
-                <div>
-                    <strong id="sidebarWorkspaceName">Nishtha&apos;s space</strong>
-                    <small>Production workspace</small>
+            <div class="workspace" id="sidebarProfileTrigger" style="cursor: pointer;" title="Click to view and edit profile" role="button" tabindex="0">
+                <span class="avatar" id="sidebarAvatar">TU</span>
+                <div style="min-width: 0; flex: 1;">
+                    <strong id="sidebarWorkspaceName" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Default Workspace</strong>
+                    <small id="sidebarUserRole" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Workspace Administrator</small>
                 </div>
             </div>
         </div>
@@ -792,7 +792,7 @@
                     </button>
                     <span>Workspace</span> / <span style="color:var(--text);">Dashboard</span>
                 </div>
-                <h1>Welcome to Dashboard <span aria-hidden="true">📊</span></h1>
+                <h1 id="dashboardWelcomeHeading">Welcome to Dashboard, <span id="userDisplayNameGreeting">User</span> <span aria-hidden="true">📊</span></h1>
                 <p class="subtitle">Real-time performance metrics and task distribution across your workspace.</p>
             </div>
             <div class="top-actions">
@@ -804,6 +804,11 @@
                 <button class="icon-button" id="notificationBtn" aria-label="Notifications" title="View notifications" aria-haspopup="true" aria-expanded="false">
                     <span class="notif-badge" id="notifBadge"></span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/></svg>
+                </button>
+
+                <!-- Profile Shortcut in Header -->
+                <button class="icon-button" id="headerProfileBtn" aria-label="Account & Workspace Profile" title="Account & Workspace Profile" style="display:flex; align-items:center; justify-content:center;">
+                    <span class="avatar user-avatar" id="headerAvatar" style="width:24px; height:24px; font-size:11px; font-weight:700; border-radius:50%; background:var(--blue); color:white; display:grid; place-items:center;">NB</span>
                 </button>
 
                 <!-- Notification Dropdown -->
@@ -966,6 +971,75 @@
             <div class="modal-footer">
                 <button type="button" class="secondary" id="cancelDashModalBtn">Cancel</button>
                 <button type="submit" class="primary" id="submitDashModalBtn">Create Task</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Quick Profile Setup Modal -->
+<div class="modal-overlay" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle" style="display:none; position:fixed; inset:0; background:rgba(5,8,16,0.75); backdrop-filter:blur(4px); z-index:2000; align-items:center; justify-content:center; padding:16px;">
+    <div class="modal-card" style="background:var(--panel); border:1px solid var(--card-border); border-radius:14px; width:100%; max-width:540px; max-height:90vh; overflow-y:auto; box-shadow:var(--card-shadow); padding:0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 22px; border-bottom:1px solid var(--line);">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div class="avatar" id="modalAvatarPreview" style="width:38px; height:38px; font-size:14px; font-weight:700; border-radius:10px; display:grid; place-items:center; background:var(--blue); color:white;">NB</div>
+                <div>
+                    <h3 id="profileModalTitle" style="font-size:16px; font-weight:700; color:var(--text); margin:0;">Account &amp; Workspace Profile</h3>
+                    <p style="font-size:12px; color:var(--muted); margin:0;">Personalize identity and organization details</p>
+                </div>
+            </div>
+            <button type="button" id="closeProfileModalBtn" style="background:transparent; color:var(--muted); font-size:20px; border:0; cursor:pointer; padding:4px 8px;" aria-label="Close profile setup">&times;</button>
+        </div>
+        <form id="modalProfileForm" style="padding:20px 22px; display:grid; gap:14px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:600; color:var(--text); margin-bottom:5px;">Full Name *</label>
+                    <input type="text" id="modalFullName" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text); font-size:13px;" placeholder="e.g. Alex Morgan" required>
+                </div>
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:600; color:var(--text); margin-bottom:5px;">Display Name *</label>
+                    <input type="text" id="modalDisplayName" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text); font-size:13px;" placeholder="e.g. Alex" required>
+                </div>
+            </div>
+            <div>
+                <label style="display:block; font-size:12px; font-weight:600; color:var(--text); margin-bottom:5px;">Email Address <span style="font-size:11px; color:var(--muted); font-weight:normal;">(Optional)</span></label>
+                <input type="email" id="modalEmail" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text); font-size:13px;" placeholder="e.g. alex@example.com">
+            </div>
+            <div>
+                <label style="display:block; font-size:12px; font-weight:600; color:var(--text); margin-bottom:5px;">Workspace Name *</label>
+                <input type="text" id="modalWorkspaceName" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text); font-size:13px;" placeholder="e.g. Engineering Workspace" required>
+            </div>
+            <div>
+                <label style="display:block; font-size:12px; font-weight:600; color:var(--text); margin-bottom:5px;">Workspace Description <span style="font-size:11px; color:var(--muted); font-weight:normal;">(Optional)</span></label>
+                <input type="text" id="modalWorkspaceDesc" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text); font-size:13px;" placeholder="Brief description of your workspace">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:600; color:var(--text); margin-bottom:5px;">Role / Designation</label>
+                    <input type="text" id="modalRole" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text); font-size:13px;" placeholder="e.g. Workspace Administrator">
+                </div>
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:600; color:var(--text); margin-bottom:5px;">Preferred Timezone</label>
+                    <select id="modalTimezone" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text); font-size:13px;">
+                        <option value="Asia/Kolkata (UTC+05:30)">Asia/Kolkata (UTC+05:30)</option>
+                        <option value="UTC (UTC+00:00)">UTC (UTC+00:00)</option>
+                        <option value="America/New_York (UTC-04:00)">America/New_York (UTC-04:00)</option>
+                        <option value="America/Los_Angeles (UTC-07:00)">America/Los_Angeles (UTC-07:00)</option>
+                        <option value="Europe/London (UTC+01:00)">Europe/London (UTC+01:00)</option>
+                        <option value="Europe/Berlin (UTC+02:00)">Europe/Berlin (UTC+02:00)</option>
+                        <option value="Asia/Tokyo (UTC+09:00)">Asia/Tokyo (UTC+09:00)</option>
+                        <option value="Asia/Singapore (UTC+08:00)">Asia/Singapore (UTC+08:00)</option>
+                        <option value="Australia/Sydney (UTC+10:00)">Australia/Sydney (UTC+10:00)</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:14px; border-top:1px solid var(--line);">
+                <button type="button" class="secondary-btn" id="modalResetProfileBtn" style="color:var(--danger); border-color:rgba(255,127,148,0.35); font-size:12px; padding:7px 12px; border-radius:8px; background:rgba(255,127,148,0.1); cursor:pointer;">
+                    Reset to Default
+                </button>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" class="secondary-btn" id="modalCancelProfileBtn" style="font-size:12px; padding:7px 14px; border-radius:8px; border:1px solid var(--btn-icon-border); background:var(--secondary-bg); color:var(--text); cursor:pointer;">Cancel</button>
+                    <button type="submit" class="primary-btn" id="modalSaveProfileBtn" style="font-size:12px; padding:7px 16px; border-radius:8px; background:linear-gradient(135deg,#718eff,#896ff1); color:white; font-weight:600; cursor:pointer; border:0;">Save Profile</button>
+                </div>
             </div>
         </form>
     </div>
@@ -1279,10 +1353,182 @@
         }
     }
 
+    let currentProfile = {
+        full_name: "TaskFlow User",
+        display_name: "User",
+        email: "",
+        avatar_color: "#6d8cff",
+        workspace_name: "Default Workspace",
+        workspace_description: "Production task and cloud DevOps workspace",
+        role: "Workspace Administrator",
+        timezone: "UTC (UTC+00:00)",
+        initials: "TU"
+    };
+
+    function syncProfileUI(profile) {
+        if (!profile) return;
+        currentProfile = Object.assign({}, currentProfile, profile);
+
+        const initials = profile.initials || (profile.display_name ? profile.display_name.slice(0, 2).toUpperCase() : "TF");
+        const wsName = profile.workspace_name || "Default Workspace";
+        const dispName = profile.display_name || "User";
+        const role = profile.role || "Workspace Administrator";
+        const color = profile.avatar_color || "#6d8cff";
+
+        ['sidebarAvatar', 'headerAvatar', 'modalAvatarPreview'].forEach(id => {
+            const el = $(id);
+            if (el) {
+                el.textContent = initials;
+                el.style.backgroundColor = color;
+            }
+        });
+
+        if ($('sidebarWorkspaceName')) $('sidebarWorkspaceName').textContent = wsName;
+        if ($('sidebarUserRole')) $('sidebarUserRole').textContent = role;
+        if ($('userDisplayNameGreeting')) $('userDisplayNameGreeting').textContent = dispName;
+
+        if ($('modalFullName')) $('modalFullName').value = profile.full_name || '';
+        if ($('modalDisplayName')) $('modalDisplayName').value = dispName;
+        if ($('modalEmail')) $('modalEmail').value = profile.email || '';
+        if ($('modalWorkspaceName')) $('modalWorkspaceName').value = wsName;
+        if ($('modalWorkspaceDesc')) $('modalWorkspaceDesc').value = profile.workspace_description || '';
+        if ($('modalRole')) $('modalRole').value = role;
+        if ($('modalTimezone') && profile.timezone) $('modalTimezone').value = profile.timezone;
+
+        try {
+            localStorage.setItem('taskflow-workspace-name', wsName);
+            localStorage.setItem('taskflow-profile-cache', JSON.stringify(currentProfile));
+        } catch (e) {}
+    }
+
+    async function fetchProfile() {
+        try {
+            const cached = localStorage.getItem('taskflow-profile-cache');
+            if (cached) syncProfileUI(JSON.parse(cached));
+        } catch (e) {}
+
+        try {
+            const res = await fetch('/profile');
+            if (res.ok) {
+                const data = await res.json();
+                syncProfileUI(data);
+            }
+        } catch (err) {
+            console.error('Error fetching profile:', err);
+        }
+    }
+
+    function openProfileModal() {
+        syncProfileUI(currentProfile);
+        const modal = $('profileModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            $('modalFullName').focus();
+        }
+    }
+
+    function closeProfileModal() {
+        const modal = $('profileModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    async function handleSaveProfileModal(e) {
+        if (e) e.preventDefault();
+
+        const fullName = ($('modalFullName').value || '').trim();
+        const dispName = ($('modalDisplayName').value || '').trim();
+        const wsName = ($('modalWorkspaceName').value || '').trim();
+
+        if (!fullName) {
+            showToast('Full Name is required');
+            $('modalFullName').focus();
+            return;
+        }
+        if (!dispName) {
+            showToast('Display Name is required');
+            $('modalDisplayName').focus();
+            return;
+        }
+        if (!wsName) {
+            showToast('Workspace Name is required');
+            $('modalWorkspaceName').focus();
+            return;
+        }
+
+        const payload = {
+            full_name: fullName,
+            display_name: dispName,
+            email: ($('modalEmail').value || '').trim(),
+            avatar_color: currentProfile.avatar_color || '#6d8cff',
+            workspace_name: wsName,
+            workspace_description: ($('modalWorkspaceDesc').value || '').trim(),
+            role: ($('modalRole').value || '').trim(),
+            timezone: $('modalTimezone').value
+        };
+
+        const btn = $('modalSaveProfileBtn');
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+
+        try {
+            const res = await fetch('/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                syncProfileUI(data);
+                closeProfileModal();
+                showToast('Account & Workspace profile updated! ✨');
+            } else {
+                showToast(data.error || 'Failed to update profile');
+            }
+        } catch (err) {
+            showToast('Network error saving profile');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Save Profile';
+        }
+    }
+
+    async function handleResetProfileModal() {
+        if (!confirm('Are you sure you want to reset your account and workspace profile to default values?\n\n(Your tasks and settings will not be affected)')) {
+            return;
+        }
+
+        try {
+            const res = await fetch('/profile/reset', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await res.json();
+            if (res.ok) {
+                syncProfileUI(data);
+                closeProfileModal();
+                showToast('Profile reset to default values ✨');
+            } else {
+                showToast(data.error || 'Failed to reset profile');
+            }
+        } catch (err) {
+            showToast('Network error resetting profile');
+        }
+    }
+
+    function setupProfileModalEvents() {
+        if ($('sidebarProfileTrigger')) $('sidebarProfileTrigger').addEventListener('click', openProfileModal);
+        if ($('headerProfileBtn')) $('headerProfileBtn').addEventListener('click', openProfileModal);
+        if ($('closeProfileModalBtn')) $('closeProfileModalBtn').addEventListener('click', closeProfileModal);
+        if ($('modalCancelProfileBtn')) $('modalCancelProfileBtn').addEventListener('click', closeProfileModal);
+        if ($('modalProfileForm')) $('modalProfileForm').addEventListener('submit', handleSaveProfileModal);
+        if ($('modalResetProfileBtn')) $('modalResetProfileBtn').addEventListener('click', handleResetProfileModal);
+    }
+
     // Keyboard support: Escape
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeDashTaskModal();
+            closeProfileModal();
             const modal = $('settingsModal');
             if (modal) modal.classList.remove('show');
             const sidebar = $('sidebar');
@@ -1297,13 +1543,12 @@
     $('cancelDashModalBtn').addEventListener('click', closeDashTaskModal);
     $('dashTaskForm').addEventListener('submit', handleCreateTask);
 
-    const savedWs = localStorage.getItem('taskflow-workspace-name');
-    if (savedWs && $('sidebarWorkspaceName')) $('sidebarWorkspaceName').textContent = savedWs;
-
     setupThemeToggle();
     setupNotifications();
     setupSettingsModal();
+    setupProfileModalEvents();
     setupMobileDrawer();
+    fetchProfile();
     loadDashboard();
 
     // Auto-refresh interval from prefs
