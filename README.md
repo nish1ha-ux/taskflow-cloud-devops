@@ -96,16 +96,14 @@ continuous integration and image delivery using GitHub Actions.
 
 ---
 
-## 📦 Deployment
-
 ## 📦 Deployment & CI/CD Status
 
-[![TaskFlow CI/CD](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions/workflows/ci.yml/badge.svg)](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions/workflows/ci.yml)
+[![TaskFlow CI/CD](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/nish1ha-ux/taskflow-cloud-devops/actions/workflows/ci.yml)
 
 ### Production Endpoint
 
-- **Live URL:** [https://13-201-90-158.nip.io/](https://13-201-90-158.nip.io/)
-- **Health Check:** [https://13-201-90-158.nip.io/health](https://13-201-90-158.nip.io/health)
+- **Live URL:** [https://65-1-93-97.nip.io/](https://65-1-93-97.nip.io/)
+- **Health Check:** [https://65-1-93-97.nip.io/health](https://65-1-93-97.nip.io/health)
 
 
 ---
@@ -146,8 +144,26 @@ The GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push and 
    - Pushes both `latest` and full Git commit SHA (`${{ github.sha }}`) tags.
 4. **Deploy to EC2**:
    - `needs: build-and-push`
-   - Secure SSH deployment to AWS EC2 instance.
+   - Secure deployment to AWS EC2 instance via AWS Systems Manager (SSM) Run Command (no inbound SSH port 22 exposure required).
    - Executes idempotent `deploy.sh` script, restarts containers with zero-downtime, and verifies `/health` endpoint over HTTPS.
+
+### 🔑 CI/CD Secrets & IAM Permissions
+
+The automated deployment pipeline requires the following GitHub Secrets and AWS IAM configurations:
+
+#### GitHub Repository Secrets
+| Secret Name | Description |
+|---|---|
+| `AWS_ACCESS_KEY_ID` | AWS IAM access key used by GitHub Actions to invoke AWS SSM. |
+| `AWS_SECRET_ACCESS_KEY` | AWS IAM secret key paired with the access key. |
+| `AWS_REGION` | AWS target deployment region (e.g., `ap-south-1`). |
+| `EC2_INSTANCE_ID` | Target EC2 instance identifier (e.g., `i-0d3c887c2f45f3500`). |
+
+*(Note: Legacy secrets `EC2_HOST`, `EC2_USER`, and `EC2_SSH_KEY` remain preserved for manual operator maintenance, but are not required for automated deployment).*
+
+#### AWS IAM Permissions
+1. **GitHub Actions Caller User**: Requires `ssm:SendCommand` (for `AWS-RunShellScript` and target instance) and `ssm:GetCommandInvocation` to dispatch and monitor the deployment status.
+2. **EC2 Instance Profile**: Requires the `AmazonSSMManagedInstanceCore` managed policy attached to the EC2 IAM role (e.g., `DemoRoleForEC2`) enabling the SSM Agent to receive tasks outbound over HTTPS without opening inbound ports.
 
 ### Genuine GitHub Actions Run Evidence
 
@@ -214,7 +230,7 @@ flake8 app tests
 ## 🛡️ Track A Verification & Security Standards
 
 - **Ports**: Only **80** (HTTP) and **443** (HTTPS) exposed to public Internet. Database (`5432`) and Flask app (`8000`) are isolated in the internal Docker bridge network `taskflow_net`.
-- **TLS / HTTPS**: Let's Encrypt automated certificate issued for `13-233-154-188.nip.io`.
+- **TLS / HTTPS**: Let's Encrypt automated certificate issued for `65-1-93-97.nip.io`.
 - **HTTP Redirect**: Nginx automatically redirects all port 80 traffic to HTTPS with `301 Moved Permanently`.
 - **Reverse Proxy Headers**: `X-Forwarded-For`, `X-Forwarded-Proto`, and `Host` headers configured; Werkzeug `ProxyFix` active in Flask app for real client IP logging.
 - **Idempotency**: `scripts/deploy.sh` safely handles state transitions, restarts containers with `--force-recreate`, and checks health before exiting.

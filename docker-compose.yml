@@ -78,7 +78,7 @@ services:
       --agree-tos
       --non-interactive
       --register-unsafely-without-email
-      -d 13-233-154-188.nip.io
+      -d 65-1-93-97.nip.io
     volumes:
       - ./nginx/www:/var/www/certbot:rw
       - nginx-letsencrypt:/etc/letsencrypt

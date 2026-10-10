@@ -33,7 +33,7 @@ fi
 
 # 3. Check if SSL certificate is already present in docker volume
 CERT_EXISTS=false
-if docker compose run --rm --no-deps --entrypoint "test -f /etc/letsencrypt/live/13-233-154-188.nip.io/fullchain.pem" certbot >/dev/null 2>&1; then
+if docker compose run --rm --no-deps --entrypoint "test -f /etc/letsencrypt/live/65-1-93-97.nip.io/fullchain.pem" certbot >/dev/null 2>&1; then
   CERT_EXISTS=true
 fi
 
@@ -49,7 +49,7 @@ fi
 echo "⏳ Waiting for application health check …"
 HEALTHY=false
 for i in {1..30}; do
-  if curl -kfsL -H "Host: 13-233-154-188.nip.io" http://127.0.0.1/health >/dev/null 2>&1 || curl -kfsL http://127.0.0.1/health >/dev/null 2>&1; then
+  if curl -kfsL -H "Host: 65-1-93-97.nip.io" http://127.0.0.1/health >/dev/null 2>&1 || curl -kfsL http://127.0.0.1/health >/dev/null 2>&1; then
     echo "✅ Health check passed"
     HEALTHY=true
     break
@@ -66,7 +66,7 @@ fi
 if [ "$CERT_EXISTS" = true ]; then
   # Verify HTTPS health specifically
   echo "⏳ Verifying HTTPS endpoint health …"
-  if curl -kfsL https://13-233-154-188.nip.io/health >/dev/null 2>&1; then
+  if curl -kfsL https://65-1-93-97.nip.io/health >/dev/null 2>&1; then
     echo "✅ HTTPS health check passed successfully"
     exit 0
   else
